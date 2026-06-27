@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>SCL城市研究所</title>
+    <meta
+      name="description"
+      content="用于快速查阅全球城市研究实验室、研究机构与城市研究期刊最新动态的前沿资讯导航站。"
+    >
+    <link rel="stylesheet" href="styles.css">
+  </head>
+  <body>
+    <header class="site-header">
+      <a class="brand" href="#home" aria-label="SCL城市研究所首页">
+        <span class="brand-mark">SCL</span>
+        <span>
+          <strong data-i18n="brand.title">SCL城市研究所</strong>
+          <small>Labs, journals, signals</small>
+        </span>
+      </a>
+      <div class="header-actions">
+        <nav class="top-nav" aria-label="主导航">
+          <a href="#home" data-i18n="nav.home">首页</a>
+          <a href="#library" data-i18n="nav.library">资源库</a>
+          <a href="#materials" data-i18n="nav.materials">资料下载</a>
+        </nav>
+        <div class="language-switch" aria-label="语言切换">
+          <button class="is-active" type="button" data-lang-toggle="zh">中文</button>
+          <button type="button" data-lang-toggle="en">EN</button>
+        </div>
+      </div>
+    </header>
+
+    <main>
+      <section class="hero" id="home">
+        <div class="hero-copy">
+          <h1 data-i18n="hero.title">SCL城市研究所资源库</h1>
+          <div class="hero-statement">
+            <p data-i18n="hero.lede">SCL城市研究所资源库用于追踪全球城市研究机构、实验室与期刊的最新动态，集中呈现研究进展、论文发布与官方资讯入口。</p>
+            <p data-i18n="hero.resourcesAre">你可以在这里：</p>
+            <ul>
+              <li data-i18n="hero.pointOfficial">快速检索城市研究机构、实验室、期刊与主题关键词</li>
+              <li data-i18n="hero.pointTopics">刷新获取最新资讯，并打开官网、论文或动态原始来源</li>
+            </ul>
+          </div>
+          <div class="hero-actions">
+            <button class="primary-button" id="refreshFeeds" type="button" data-i18n="actions.refresh">刷新最新资讯</button>
+            <a class="secondary-button" href="#library" data-i18n="actions.browse">浏览全部来源</a>
+          </div>
+        </div>
+      </section>
+
+      <section class="control-band" aria-label="资讯筛选">
+        <div class="search-wrap">
+          <label for="globalSearch" data-i18n="search.label">检索来源或主题</label>
+          <input id="globalSearch" type="search" placeholder="例如 MIT、城市分析、期刊、交通、空间数据" data-i18n-placeholder="search.placeholder">
+        </div>
+        <div class="metric-row" aria-label="来源统计">
+          <div>
+            <strong id="totalSources">0</strong>
+            <span data-i18n="metrics.sources">已纳入来源</span>
+          </div>
+          <div>
+            <strong id="journalCount">0</strong>
+            <span data-i18n="metrics.journals">期刊与出版</span>
+          </div>
+          <div>
+            <strong id="labCount">0</strong>
+            <span data-i18n="metrics.labs">实验室与机构</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="feed-section" aria-labelledby="feedTitle">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">Live Board</p>
+            <h2 id="feedTitle" data-i18n="feed.title">最新资讯</h2>
+          </div>
+          <div class="segmented-control" role="tablist" aria-label="资讯类型">
+            <button class="is-active" type="button" data-feed-filter="all" data-i18n="filters.all">全部</button>
+            <button type="button" data-feed-filter="lab" data-i18n="filters.progress">研究进展</button>
+            <button type="button" data-feed-filter="paper" data-i18n="filters.papers">论文资讯</button>
+          </div>
+        </div>
+        <div class="status-line" id="feedStatus" role="status">
+          点击“刷新最新资讯”后，每次展示 8 条；研究机构优先读取官网最新动态，期刊读取最新论文信息。
+        </div>
+        <div class="feed-grid" id="feedGrid"></div>
+      </section>
+
+      <section class="library-section" id="library" aria-labelledby="libraryTitle">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">Source Library</p>
+            <h2 id="libraryTitle" data-i18n="library.title">城市研究机构</h2>
+          </div>
+          <div class="segmented-control" role="tablist" aria-label="资源类型">
+            <button class="is-active" type="button" data-source-filter="all" data-i18n="filters.all">全部</button>
+            <button type="button" data-source-filter="lab" data-i18n="filters.labs">实验室</button>
+            <button type="button" data-source-filter="institution" data-i18n="filters.institutions">机构</button>
+            <button type="button" data-source-filter="journal" data-i18n="filters.journals">期刊</button>
+          </div>
+        </div>
+        <div class="source-grid" id="sourceGrid"></div>
+      </section>
+
+      <section class="materials-section" id="materials" aria-labelledby="materialsTitle">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">Research Downloads</p>
+            <h2 id="materialsTitle" data-i18n="materials.title">研究资料下载</h2>
+            <p class="section-note" data-i18n="materials.description">摘取小红书账号提到的城市研究、街道设计、城市更新与公共空间资料，后续可继续补充下载链接。</p>
+          </div>
+          <a class="secondary-button section-link" href="https://www.xiaohongshu.com/user/profile/5d560a22000000000100976f" target="_blank" rel="noreferrer" data-i18n="materials.sourceLink">查看小红书来源</a>
+        </div>
+        <div class="materials-grid" id="materialsGrid"></div>
+      </section>
+
+    </main>
+
+    <footer class="site-footer" aria-label="页脚信息">
+      <div class="footer-main">
+        <strong data-i18n="footer.title">SCL城市研究所</strong>
+        <span data-i18n="footer.source">数据来源：favorites_2026_6_27.html 相关收藏夹与本次全球城市研究来源检索。</span>
+      </div>
+      <div class="footer-meta" aria-label="资源概览">
+        <span data-i18n="footer.scope">全球城市研究实验室、机构与期刊导航</span>
+        <span data-i18n="footer.count">76 个来源 · 支持中英文检索</span>
+      </div>
+      <nav class="footer-links" aria-label="页脚导航">
+        <a href="#library" data-i18n="footer.library">查看资源库</a>
+        <a href="#home" data-i18n="footer.backTop">回到顶部</a>
+      </nav>
+    </footer>
+
+    <script src="data.js"></script>
+    <script src="app.js"></script>
+  </body>
+</html>
