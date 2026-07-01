@@ -168,54 +168,6 @@ const SOURCES = [
     includeReason: "收藏夹中明确为城市研究院。"
   },
   {
-    id: "bjghy",
-    name: "北京市城市规划设计研究院",
-    type: "institution",
-    region: "中国",
-    url: "https://www.bjghy.com.cn/cont/21",
-    latestUrl: "https://www.bjghy.com.cn/",
-    folder: "城市研究机构",
-    tags: ["规划研究", "北京", "城市治理"],
-    description: "北京城市规划与城市治理研究、设计和政策支撑机构。",
-    includeReason: "规划研究机构，保留为城市研究来源。"
-  },
-  {
-    id: "thupdi",
-    name: "北京清华同衡规划设计研究院",
-    type: "institution",
-    region: "中国",
-    url: "http://www.thupdi.com/",
-    latestUrl: "http://www.thupdi.com/",
-    folder: "城市研究机构",
-    tags: ["规划研究", "城市更新", "空间治理"],
-    description: "规划设计研究机构，覆盖城市更新、空间治理与区域研究。",
-    includeReason: "城市规划研究机构。"
-  },
-  {
-    id: "thupdi-ict",
-    name: "清华同衡技术创新中心",
-    type: "institution",
-    region: "中国",
-    url: "http://ict.thupdi.com/",
-    latestUrl: "http://ict.thupdi.com/",
-    folder: "城市研究机构",
-    tags: ["技术创新", "城市数据", "规划工具"],
-    description: "聚焦规划技术创新、城市数据与数字化工具。",
-    includeReason: "技术型城市研究与规划创新来源。"
-  },
-  {
-    id: "icity-design",
-    name: "万科城市研究院",
-    type: "institution",
-    region: "中国",
-    url: "https://www.icity.design/about",
-    latestUrl: "https://www.icity.design/",
-    folder: "城市研究机构",
-    tags: ["城市研究", "社区", "生活方式"],
-    description: "围绕城市、社区和居住生活方式开展研究与议题传播。",
-    includeReason: "收藏夹中明确为城市研究院。"
-  },
-  {
     id: "wri-china",
     name: "WRI China",
     type: "institution",
@@ -944,86 +896,931 @@ const SOURCES = [
   }
 ];
 
-const XIAOHONGSHU_SOURCE_URL = "https://www.xiaohongshu.com/user/profile/5d560a22000000000100976f";
+// 城市多源大数据：提供城市相关数据的开放平台、数据供应商、遥感与地图数据源。
+// 来源：收藏夹「城市多源大数据 / 政府官方数据库 / 城市大数据供应商 / 宏观地理数据 / 开放地图API / 交通数据分析 / 舆情指数分析」筛选 + 收藏夹外补充检索。
+// category: gov 政府开放 | geo 地理遥感 | mobility 时空人口 | api 地图API | thematic 专题数据
+const URBAN_DATA_SOURCES = [
+  {
+    id: "shenzhen-opendata",
+    name: "深圳市政府数据开放平台",
+    category: "gov",
+    origin: "中国",
+    url: "https://opendata.sz.gov.cn/",
+    tags: ["开放数据", "政府数据", "中国城市"],
+    description: "深圳市统一政府数据开放门户，提供交通、人口、城市运行等多领域可下载数据集与API。",
+    descriptionEn: "Shenzhen's official open-government data portal with downloadable datasets and APIs across transport, population, and city operations."
+  },
+  {
+    id: "us-census",
+    name: "U.S. Census Bureau",
+    category: "gov",
+    origin: "美国",
+    url: "https://www.census.gov/",
+    tags: ["人口数据", "政府数据", "开放数据"],
+    description: "美国人口普查局，提供人口、住房、经济等权威普查与社区调查数据（含API）。",
+    descriptionEn: "The U.S. Census Bureau, offering authoritative population, housing, and economic census and survey data with APIs."
+  },
+  {
+    id: "worldbank-data",
+    name: "World Bank Open Data",
+    category: "gov",
+    origin: "全球",
+    url: "https://data.worldbank.org/",
+    tags: ["开放数据", "社会经济", "全球指标"],
+    description: "世界银行开放数据，覆盖各国发展、人口、城市化、经济等长期指标，可视化与下载。",
+    descriptionEn: "World Bank Open Data with long-run development, population, urbanization, and economic indicators for countries worldwide."
+  },
+  {
+    id: "oecd-data",
+    name: "OECD Data Explorer",
+    category: "gov",
+    origin: "全球",
+    url: "https://data-explorer.oecd.org/",
+    tags: ["经济数据", "统计数据", "开放数据"],
+    description: "经合组织数据浏览器，提供区域、城市、经济与社会主题的标准化统计数据。",
+    descriptionEn: "OECD's data explorer with standardized statistics on regions, cities, and economic and social themes."
+  },
+  {
+    id: "humdata-hdx",
+    name: "Humanitarian Data Exchange (HDX)",
+    category: "gov",
+    origin: "全球",
+    url: "https://data.humdata.org/",
+    tags: ["开放数据", "人道数据", "地理空间"],
+    description: "联合国 OCHA 运营的人道数据平台，汇集人口、边界、灾害、基础设施等地理空间数据。",
+    descriptionEn: "UN OCHA's humanitarian data platform aggregating population, boundary, disaster, and infrastructure geospatial datasets."
+  },
+  {
+    id: "china-stats",
+    name: "国家统计局",
+    category: "gov",
+    origin: "中国",
+    url: "https://www.stats.gov.cn/",
+    tags: ["统计数据", "人口数据", "开放数据"],
+    description: "中国国家统计局，提供全国与分省市的人口、经济、社会统计年鉴与年度数据查询。",
+    descriptionEn: "China's National Bureau of Statistics, providing national and provincial population, economic, and social statistical yearbooks."
+  },
+  {
+    id: "usgs-earthexplorer",
+    name: "USGS EarthExplorer",
+    category: "geo",
+    origin: "全球",
+    url: "https://earthexplorer.usgs.gov/",
+    tags: ["遥感", "卫星影像", "高程数据"],
+    description: "美国地质调查局影像检索平台，免费下载 Landsat、航拍、DEM 等遥感与高程数据。",
+    descriptionEn: "USGS imagery portal for free download of Landsat, aerial, and DEM remote-sensing and elevation data."
+  },
+  {
+    id: "google-earth-engine",
+    name: "Google Earth Engine",
+    category: "geo",
+    origin: "全球",
+    url: "https://earthengine.google.com/",
+    tags: ["遥感", "地理空间", "云计算"],
+    description: "谷歌地球引擎，PB 级卫星影像与地理数据集的云端分析平台，适合大尺度城市遥感分析。",
+    descriptionEn: "Google's cloud platform for petabyte-scale satellite imagery and geospatial analysis, suited to large-scale urban remote sensing."
+  },
+  {
+    id: "nasa-earthdata",
+    name: "NASA Earthdata",
+    category: "geo",
+    origin: "全球",
+    url: "https://www.earthdata.nasa.gov/",
+    tags: ["遥感", "对地观测", "开放数据"],
+    description: "NASA 对地观测数据门户，覆盖大气、土地、海洋、人居等开放地球科学数据集。",
+    descriptionEn: "NASA's earth-observation data portal spanning atmosphere, land, ocean, and human-settlement open datasets."
+  },
+  {
+    id: "copernicus-dataspace",
+    name: "Copernicus Data Space (Sentinel)",
+    category: "geo",
+    origin: "欧洲",
+    url: "https://dataspace.copernicus.eu/",
+    tags: ["遥感", "卫星影像", "对地观测"],
+    description: "欧盟哥白尼计划数据空间，免费提供 Sentinel 系列卫星影像与对地观测产品。",
+    descriptionEn: "The EU Copernicus data space offering free Sentinel satellite imagery and earth-observation products."
+  },
+  {
+    id: "openstreetmap-data",
+    name: "OpenStreetMap",
+    category: "geo",
+    origin: "全球",
+    url: "https://www.openstreetmap.org/",
+    tags: ["开放地图", "地理空间", "开放数据"],
+    description: "全球协作开放地图，含道路、建筑、用地与POI矢量数据，可经Overpass/Geofabrik批量下载。",
+    descriptionEn: "Global collaborative open map with roads, buildings, land use, and POI vectors, downloadable via Overpass/Geofabrik."
+  },
+  {
+    id: "overture-maps",
+    name: "Overture Maps Foundation",
+    category: "geo",
+    origin: "全球",
+    url: "https://overturemaps.org/",
+    tags: ["开放地图", "POI", "建筑轮廓"],
+    description: "由多家科技公司共建的开放地图数据，提供标准化的地点(POI)、建筑、交通与行政要素。",
+    descriptionEn: "Open map data backed by major tech firms, providing standardized places (POI), buildings, transportation, and admin layers."
+  },
+  {
+    id: "gadm",
+    name: "GADM 全球行政边界",
+    category: "geo",
+    origin: "全球",
+    url: "https://gadm.org/",
+    tags: ["行政边界", "地理空间", "开放数据"],
+    description: "全球各级行政区划边界矢量数据库，常用于制图与空间统计的底层边界。",
+    descriptionEn: "A global database of administrative boundary vectors at all levels, widely used as a base layer for mapping and spatial stats."
+  },
+  {
+    id: "worldpop",
+    name: "WorldPop",
+    category: "geo",
+    origin: "全球",
+    url: "https://www.worldpop.org/",
+    tags: ["人口数据", "栅格数据", "开放数据"],
+    description: "高分辨率人口分布栅格数据，提供各国逐网格人口、年龄结构与流动估算。",
+    descriptionEn: "High-resolution gridded population data with per-cell counts, age structure, and mobility estimates by country."
+  },
+  {
+    id: "gscloud",
+    name: "地理空间数据云",
+    category: "geo",
+    origin: "中国",
+    url: "http://www.gscloud.cn/",
+    tags: ["遥感", "高程数据", "卫星影像"],
+    description: "中科院地理空间数据云，提供 Landsat、MODIS、DEM 等遥感数据的中文检索下载。",
+    descriptionEn: "CAS Geospatial Data Cloud offering Chinese-language search and download of Landsat, MODIS, and DEM data."
+  },
+  {
+    id: "quanturban",
+    name: "量城科技 QuantUrban",
+    category: "mobility",
+    origin: "中国",
+    url: "https://quanturban.com/",
+    tags: ["城市大数据", "时空数据", "决策咨询"],
+    description: "城市时空大数据产品与决策咨询，提供人口活动、职住、城市体检等数据服务。",
+    descriptionEn: "Urban spatiotemporal big-data products and consulting, covering population activity, jobs-housing, and city diagnostics."
+  },
+  {
+    id: "smartsteps",
+    name: "智慧足迹 Smartsteps",
+    category: "mobility",
+    origin: "中国",
+    url: "https://www.smartsteps.com/",
+    tags: ["位置大数据", "时空数据", "人口热力"],
+    description: "基于运营商信令的位置大数据服务商，提供人口热力、流动与职住分析。",
+    descriptionEn: "A location big-data provider based on carrier signaling, offering population heat, flow, and jobs-housing analytics."
+  },
+  {
+    id: "talkingdata",
+    name: "TalkingData",
+    category: "mobility",
+    origin: "中国",
+    url: "https://www.talkingdata.com/",
+    tags: ["移动数据", "位置大数据", "数据智能"],
+    description: "移动互联网数据服务商，提供人群画像、位置洞察与城市消费等数据智能产品。",
+    descriptionEn: "A mobile-data company providing audience profiling, location insight, and urban consumption data-intelligence products."
+  },
+  {
+    id: "geohey",
+    name: "极海 GeoHey",
+    category: "mobility",
+    origin: "中国",
+    url: "https://geohey.com/",
+    tags: ["地理大数据", "空间分析", "数据可视化"],
+    description: "地理大数据平台，整合人口、商业、地块等多源数据并提供空间分析与可视化。",
+    descriptionEn: "A geospatial big-data platform integrating population, commercial, and parcel data with spatial analysis and visualization."
+  },
+  {
+    id: "udparty",
+    name: "城市数据派",
+    category: "mobility",
+    origin: "中国",
+    url: "https://www.udparty.com/",
+    tags: ["城市数据", "数据社区", "开放数据"],
+    description: "城市数据从业者社区，汇总开放数据源、案例与教程，是数据获取的重要入口。",
+    descriptionEn: "A community for urban-data practitioners aggregating open data sources, cases, and tutorials."
+  },
+  {
+    id: "amap-lbs",
+    name: "高德开放平台",
+    category: "api",
+    origin: "中国",
+    url: "https://lbs.amap.com/",
+    tags: ["地图API", "POI", "出行"],
+    description: "高德地图开放平台，提供POI搜索、路径规划、逆地理编码与交通态势等API。",
+    descriptionEn: "Amap's open platform with APIs for POI search, routing, reverse geocoding, and traffic conditions."
+  },
+  {
+    id: "baidu-lbs",
+    name: "百度地图开放平台",
+    category: "api",
+    origin: "中国",
+    url: "https://lbsyun.baidu.com/",
+    tags: ["地图API", "POI", "路径规划"],
+    description: "百度地图开放平台，提供地图、检索、定位、路线与全景等Web与SDK接口。",
+    descriptionEn: "Baidu Maps open platform with web and SDK APIs for maps, search, positioning, routing, and panorama."
+  },
+  {
+    id: "baidu-huiyan",
+    name: "百度地图慧眼",
+    category: "api",
+    origin: "中国",
+    url: "https://huiyan.baidu.com/",
+    tags: ["位置大数据", "人口迁徙", "时空数据"],
+    description: "百度位置大数据平台，提供人口画像、迁徙、客流与商圈分析等城市洞察。",
+    descriptionEn: "Baidu's location big-data platform offering population profiles, migration, footfall, and trade-area urban insights."
+  },
+  {
+    id: "cma-data",
+    name: "中国气象数据网",
+    category: "thematic",
+    origin: "中国",
+    url: "http://data.cma.cn/",
+    tags: ["气象数据", "气候", "开放数据"],
+    description: "国家气象信息中心数据门户，提供地面、辐射、气候等观测与再分析气象数据。",
+    descriptionEn: "China Meteorological Data Service Center with surface, radiation, and climate observation and reanalysis data."
+  },
+  {
+    id: "baidu-jiaotong",
+    name: "百度地图交通大数据",
+    category: "thematic",
+    origin: "中国",
+    url: "https://jiaotong.baidu.com/",
+    tags: ["交通数据", "拥堵指数", "出行"],
+    description: "百度交通大数据平台，发布城市实时与历史拥堵指数、出行与通勤分析报告。",
+    descriptionEn: "Baidu's traffic big-data platform publishing real-time/historical congestion indices and commuting analytics."
+  },
+  {
+    id: "baidu-index",
+    name: "百度指数",
+    category: "thematic",
+    origin: "中国",
+    url: "https://index.baidu.com/",
+    tags: ["搜索指数", "舆情", "趋势分析"],
+    description: "基于搜索行为的趋势与需求图谱工具，可用于城市议题热度与舆情的代理观测。",
+    descriptionEn: "A search-trend and demand-graph tool usable as a proxy for the popularity of urban topics and public attention."
+  },
+  {
+    id: "metrodb",
+    name: "深圳地铁数据库 MetroDB",
+    category: "thematic",
+    origin: "中国",
+    url: "https://metrodb.org/",
+    tags: ["交通数据", "地铁客流", "城市数据"],
+    description: "整理城市轨道交通线路、站点与客流的数据库，便于查询地铁运营与客流量。",
+    descriptionEn: "A database of metro lines, stations, and ridership for querying rail-transit operations and passenger flows."
+  }
+];
 
-const RESEARCH_MATERIALS = [
+// 数据可视化工具：图表/BI、地理可视化、编程库、词云文本与统计分析工具。
+// 来源：收藏夹「数据可视化软件 / AI数据分析产品 / 城市分析平台」筛选 + 收藏夹外补充检索。
+// category: chart 图表与BI | geo 地理可视化 | code 编程库 | text 词云文本 | stat 统计分析
+const DATAVIZ_TOOLS = [
   {
-    id: "methods-in-urban-analysis",
-    title: "一次搞定城市分析方法论 - 城市研究必备手册",
-    titleEn: "Methods in Urban Analysis",
-    format: "城市分析手册",
-    formatEn: "Urban Analysis Handbook",
-    image: "assets/research-materials/methods-urban-analysis.png",
-    sourceUrl: XIAOHONGSHU_SOURCE_URL,
-    downloadUrl: "",
-    description: "汇集城市管理、城市研究、规划与政策制定中的方法论知识点，适合作为城市分析入门与项目研究框架参考。",
-    descriptionEn: "A methods handbook for urban management, urban research, planning, and policy work, useful for structuring analysis projects.",
-    tags: ["城市分析", "方法论", "城市管理", "规划研究"]
+    id: "echarts",
+    name: "Apache ECharts",
+    category: "code",
+    origin: "全球",
+    url: "https://echarts.apache.org/",
+    tags: ["开源", "图表库", "数据可视化"],
+    description: "Apache 开源 JavaScript 图表库，支持折线、地图、关系图等丰富类型，中文社区活跃。",
+    descriptionEn: "An Apache open-source JavaScript charting library with rich chart types including maps and graphs."
   },
   {
-    id: "15-minute-city",
-    title: "15分钟城市：起源、发展、全球城市实践与趋势",
-    titleEn: "The 15-Minute City",
-    format: "理论与案例资料",
-    formatEn: "Theory and Case Resource",
-    image: "assets/research-materials/15-minute-city.png",
-    sourceUrl: XIAOHONGSHU_SOURCE_URL,
-    downloadUrl: "",
-    description: "围绕 Carlos Moreno 的 15 分钟城市概念，梳理其起源、发展脉络、全球城市实践与时间友好型城市趋势。",
-    descriptionEn: "A resource on Carlos Moreno's 15-minute city concept, its origins, evolution, global practice, and time-friendly urbanism.",
-    tags: ["15分钟城市", "社区", "可持续城市", "城市生活圈"]
+    id: "d3js",
+    name: "D3.js",
+    category: "code",
+    origin: "全球",
+    url: "https://d3js.org/",
+    tags: ["开源", "可视化库", "SVG"],
+    description: "底层数据驱动可视化库，基于 SVG/Canvas 自由定制几乎任意图形，业界标杆。",
+    descriptionEn: "A low-level, data-driven visualization library for building almost any custom graphic on SVG/Canvas."
   },
   {
-    id: "villages-in-the-city",
-    title: "华南地区城中村设计指南",
-    titleEn: "Villages in the City",
-    format: "PDF 分享",
-    formatEn: "PDF Resource",
-    image: "assets/research-materials/villages-in-city.png",
-    sourceUrl: XIAOHONGSHU_SOURCE_URL,
-    downloadUrl: "",
-    description: "聚焦华南地区非正式住区与城中村空间，提供城中村理解、更新与设计研究的参考资料。",
-    descriptionEn: "A guide to South China's informal settlements, useful for understanding, renewal, and design research on urban villages.",
-    tags: ["城中村", "非正式住区", "华南城市", "城市更新"]
+    id: "observable-plot",
+    name: "Observable Plot",
+    category: "code",
+    origin: "全球",
+    url: "https://observablehq.com/plot/",
+    tags: ["开源", "图形语法", "快速绘图"],
+    description: "D3 团队推出的高层图形语法库，用少量代码快速生成探索性图表。",
+    descriptionEn: "A high-level grammar-of-graphics library from the D3 team for quick exploratory charts with minimal code."
   },
   {
-    id: "designing-streets-for-kids",
-    title: "为儿童而设计的街道",
-    titleEn: "Designing Streets for Kids",
-    format: "PDF 分享",
-    formatEn: "PDF Resource",
-    image: "assets/research-materials/designing-streets-kids.png",
-    sourceUrl: XIAOHONGSHU_SOURCE_URL,
-    downloadUrl: "",
-    description: "面向儿童友好街道的设计指南，关注安全通学、慢行空间、街道家具、活动空间与包容性交通环境。",
-    descriptionEn: "A design guide for child-friendly streets, focused on safer mobility, active travel, street furniture, and inclusive public space.",
-    tags: ["儿童友好", "街道设计", "慢行", "公共空间"]
+    id: "plotly",
+    name: "Plotly",
+    category: "code",
+    origin: "美国",
+    url: "https://plotly.com/",
+    tags: ["可视化库", "交互图表", "多语言"],
+    description: "支持 Python/R/JS 的交互式可视化库，含 40+ 图表类型与 Dash 仪表盘框架。",
+    descriptionEn: "An interactive visualization library for Python/R/JS with 40+ chart types and the Dash dashboard framework."
   },
   {
-    id: "street-transformations",
-    title: "如何实施城市街道改造",
-    titleEn: "How to Implement Street Transformations",
-    format: "PDF 分享",
-    formatEn: "PDF Resource",
-    image: "assets/research-materials/street-transformations.png",
-    sourceUrl: XIAOHONGSHU_SOURCE_URL,
-    downloadUrl: "",
-    description: "介绍街道改造从问题识别、临时干预、实施推进到空间转型的路径，适合街道更新与战术城市主义参考。",
-    descriptionEn: "A resource on implementing street transformations, from diagnosis and interim interventions to delivery and spatial change.",
-    tags: ["街道改造", "战术城市主义", "交通", "公共空间"]
+    id: "vega-lite",
+    name: "Vega-Lite",
+    category: "code",
+    origin: "全球",
+    url: "https://vega.github.io/vega-lite/",
+    tags: ["开源", "图形语法", "声明式"],
+    description: "声明式可视化语法，用 JSON 规格描述统计图形，适合快速、可复用的图表生成。",
+    descriptionEn: "A declarative visualization grammar describing statistical graphics as JSON specs for fast, reusable charts."
   },
   {
-    id: "global-street-design-guide",
-    title: "全球街道设计指南",
-    titleEn: "Global Street Design Guide",
-    format: "PDF 分享",
-    formatEn: "PDF Resource",
-    image: "assets/research-materials/global-street-design-guide.png",
-    sourceUrl: XIAOHONGSHU_SOURCE_URL,
-    downloadUrl: "",
-    description: "全球街道设计的综合指南，覆盖街道断面、交叉口、慢行系统、公交优先与城市公共空间设计原则。",
-    descriptionEn: "A comprehensive global street design guide covering sections, intersections, active mobility, transit priority, and public realm principles.",
-    tags: ["街道设计", "全球案例", "交通", "公共空间"]
+    id: "tableau",
+    name: "Tableau",
+    category: "chart",
+    origin: "美国",
+    url: "https://www.tableau.com/",
+    tags: ["商业智能", "仪表盘", "数据可视化"],
+    description: "主流商业智能与可视化平台，拖拽式构建交互仪表盘，支持地理与多源数据。",
+    descriptionEn: "A leading BI and visualization platform for building interactive dashboards with drag-and-drop and geo support."
+  },
+  {
+    id: "powerbi",
+    name: "Microsoft Power BI",
+    category: "chart",
+    origin: "美国",
+    url: "https://powerbi.microsoft.com/",
+    tags: ["商业智能", "仪表盘", "数据分析"],
+    description: "微软商业智能工具，连接多源数据生成报表与仪表盘，集成 Office 生态。",
+    descriptionEn: "Microsoft's BI tool for connecting multi-source data to build reports and dashboards within the Office ecosystem."
+  },
+  {
+    id: "datawrapper",
+    name: "Datawrapper",
+    category: "chart",
+    origin: "欧洲",
+    url: "https://www.datawrapper.de/",
+    tags: ["在线图表", "数据新闻", "地图"],
+    description: "面向新闻与报告的在线制图工具，几步生成可发布的图表、地图与表格。",
+    descriptionEn: "An online charting tool for newsrooms and reports, producing publishable charts, maps, and tables in a few steps."
+  },
+  {
+    id: "rawgraphs",
+    name: "RAWGraphs",
+    category: "chart",
+    origin: "全球",
+    url: "https://www.rawgraphs.io/",
+    tags: ["开源", "在线图表", "探索性可视化"],
+    description: "开源在线工具，擅长把表格数据快速映射为非常规、探索性的可视化图形。",
+    descriptionEn: "An open-source online tool specialized in mapping tabular data into unconventional, exploratory visualizations."
+  },
+  {
+    id: "flourish",
+    name: "Flourish",
+    category: "chart",
+    origin: "英国",
+    url: "https://flourish.studio/",
+    tags: ["在线图表", "动态可视化", "数据新闻"],
+    description: "模板化在线可视化工具，无需编程即可制作动态、可叙事的图表与滚动故事。",
+    descriptionEn: "A template-based online tool for making animated, narrative charts and scrollytelling stories without coding."
+  },
+  {
+    id: "chartcube",
+    name: "ChartCube（AntV）",
+    category: "chart",
+    origin: "中国",
+    url: "https://chartcube.alipay.com/",
+    tags: ["在线图表", "AntV", "数据可视化"],
+    description: "蚂蚁 AntV 出品的在线图表制作工具，上传数据即可生成规范、美观的图表。",
+    descriptionEn: "An online chart maker by Ant Group's AntV, generating clean, well-styled charts from uploaded data."
+  },
+  {
+    id: "highcharts",
+    name: "Highcharts",
+    category: "code",
+    origin: "全球",
+    url: "https://www.highcharts.com/",
+    tags: ["图表库", "交互图表", "可视化库"],
+    description: "成熟的商用 JavaScript 图表库，API 完善、兼容性好，广泛用于Web交互图表。",
+    descriptionEn: "A mature commercial JavaScript charting library with a complete API and broad compatibility for web charts."
+  },
+  {
+    id: "keplergl",
+    name: "kepler.gl",
+    category: "geo",
+    origin: "全球",
+    url: "https://kepler.gl/",
+    tags: ["地理可视化", "大数据地图", "WebGL"],
+    description: "Uber 开源的地理大数据可视化工具，拖拽即可对百万级点线进行地图渲染与时序动画。",
+    descriptionEn: "Uber's open-source geospatial tool for drag-and-drop mapping and time animation of millions of points and lines."
+  },
+  {
+    id: "deckgl",
+    name: "deck.gl",
+    category: "geo",
+    origin: "全球",
+    url: "https://deck.gl/",
+    tags: ["地理可视化", "WebGL", "大规模数据"],
+    description: "基于 WebGL 的大规模地理可视化框架，支持图层化渲染海量空间数据，kepler.gl 的底层引擎。",
+    descriptionEn: "A WebGL framework for large-scale geospatial visualization with layered rendering; the engine behind kepler.gl."
+  },
+  {
+    id: "leaflet",
+    name: "Leaflet",
+    category: "geo",
+    origin: "全球",
+    url: "https://leafletjs.com/",
+    tags: ["交互地图", "地图库", "开源"],
+    description: "轻量开源交互地图库，体积小、插件丰富，是 Web 嵌入地图的常用方案。",
+    descriptionEn: "A lightweight open-source interactive-map library with a small footprint and rich plugins for embedding web maps."
+  },
+  {
+    id: "flowmap-blue",
+    name: "Flowmap.blue",
+    category: "geo",
+    origin: "全球",
+    url: "https://www.flowmap.blue/",
+    tags: ["流向图", "地理可视化", "OD可视化"],
+    description: "在线流向图工具，从起讫(OD)表格直接生成空间流动可视化，适合通勤与迁徙。",
+    descriptionEn: "An online flow-map tool that turns origin-destination tables into spatial flow visualizations for commuting and migration."
+  },
+  {
+    id: "sanddance",
+    name: "SandDance",
+    category: "geo",
+    origin: "全球",
+    url: "https://microsoft.github.io/SandDance/",
+    tags: ["三维可视化", "数据探索", "交互"],
+    description: "微软开源的数据探索可视化，用统一的单位可视化在 2D/3D 间流畅过渡探索数据。",
+    descriptionEn: "Microsoft's open-source unit-visualization tool for fluidly exploring data across 2D/3D views."
+  },
+  {
+    id: "maptable",
+    name: "MapTable",
+    category: "geo",
+    origin: "中国",
+    url: "https://maptable.com/",
+    tags: ["空间可视化", "在线制图", "数据地图"],
+    description: "在线空间数据分析与制图平台，支持上传数据、空间分析并发布交互数据地图。",
+    descriptionEn: "An online platform for spatial analysis and mapping, supporting data upload, analysis, and publishing interactive maps."
+  },
+  {
+    id: "gephi",
+    name: "Gephi",
+    category: "code",
+    origin: "全球",
+    url: "https://gephi.org/",
+    tags: ["网络分析", "图可视化", "开源"],
+    description: "开源网络与图可视化软件，适合社会网络、交通网络等关系数据的布局与分析。",
+    descriptionEn: "Open-source network and graph visualization software for laying out and analyzing relational data like social or transport networks."
+  },
+  {
+    id: "qgis",
+    name: "QGIS",
+    category: "geo",
+    origin: "全球",
+    url: "https://qgis.org/",
+    tags: ["GIS", "地图制图", "开源"],
+    description: "免费开源的桌面 GIS，集空间数据处理、分析与高质量地图制图于一体。",
+    descriptionEn: "A free, open-source desktop GIS combining spatial data processing, analysis, and high-quality cartography."
+  },
+  {
+    id: "weiciyun",
+    name: "微词云",
+    category: "text",
+    origin: "中国",
+    url: "https://www.weiciyun.com/",
+    tags: ["词云", "文本可视化", "在线工具"],
+    description: "在线词云与文本可视化工具，支持分词、形状与配色自定义，适合舆情与文本呈现。",
+    descriptionEn: "An online word-cloud and text-visualization tool with segmentation, shapes, and color customization."
+  },
+  {
+    id: "wordart",
+    name: "WordArt",
+    category: "text",
+    origin: "全球",
+    url: "https://wordart.com/",
+    tags: ["词云", "文本可视化", "在线工具"],
+    description: "在线词云生成器，支持自定义形状、字体与导出，适合快速制作艺术化词云。",
+    descriptionEn: "An online word-cloud generator with custom shapes, fonts, and export for quick artistic word clouds."
+  },
+  {
+    id: "picdata",
+    name: "图悦",
+    category: "text",
+    origin: "中国",
+    url: "http://www.picdata.cn/",
+    tags: ["词云", "词频分析", "文本可视化"],
+    description: "中文在线词频分析与词云制作工具，可批量统计高频词并生成词云图。",
+    descriptionEn: "A Chinese online word-frequency and word-cloud tool that tallies high-frequency terms and renders clouds."
+  },
+  {
+    id: "spsspro",
+    name: "SPSSPRO",
+    category: "stat",
+    origin: "中国",
+    url: "https://www.spsspro.com/",
+    tags: ["统计分析", "在线SPSS", "数据分析"],
+    description: "免费在线统计分析平台，覆盖描述、回归、因子等方法并自动给出图表与解读。",
+    descriptionEn: "A free online statistical-analysis platform covering descriptive, regression, and factor methods with auto charts and interpretation."
+  },
+  {
+    id: "spssau",
+    name: "SPSSAU",
+    category: "stat",
+    origin: "中国",
+    url: "https://spssau.com/",
+    tags: ["统计分析", "在线SPSS", "问卷分析"],
+    description: "在线 SPSS 分析工具，面向问卷与科研数据提供相关、回归、信效度等一站式分析。",
+    descriptionEn: "An online SPSS-style tool offering correlation, regression, and reliability/validity analysis for surveys and research data."
+  },
+  {
+    id: "tuzhidian",
+    name: "图之典",
+    category: "chart",
+    origin: "中国",
+    url: "http://tuzhidian.com/",
+    tags: ["图表词典", "数据可视化", "设计参考"],
+    description: "中文图表类型词典，系统梳理各类图表的定义、适用场景与示例，便于选型。",
+    descriptionEn: "A Chinese dictionary of chart types cataloging definitions, use cases, and examples to aid chart selection."
+  }
+];
+
+// 学术文献与检索：文献横断检索入口——综合搜索、引文索引、开放获取、中文库与文献探索工具。
+// access: "subscription" 的条目多需机构订阅/登录，卡片会显示「需订阅」标记。
+// category: general 综合检索 | index 引文索引 | oa 开放获取 | cn 中文文献 | tool 探索工具
+const ACADEMIC_SOURCES = [
+  {
+    id: "google-scholar",
+    name: "Google Scholar",
+    category: "general",
+    origin: "全球",
+    access: "open",
+    url: "https://scholar.google.com/",
+    tags: ["学术搜索", "免费", "引文追踪"],
+    description: "覆盖各学科的免费学术搜索引擎，常附全文PDF链接与被引统计，城市研究检索的首选入口。",
+    descriptionEn: "A free cross-discipline scholarly search engine with full-text links and citation counts; a first stop for urban-research search."
+  },
+  {
+    id: "semantic-scholar",
+    name: "Semantic Scholar",
+    category: "general",
+    origin: "美国",
+    access: "open",
+    url: "https://www.semanticscholar.org/",
+    tags: ["学术搜索", "AI检索", "论文图谱"],
+    description: "Allen AI 的免费学术检索，用 NLP 生成论文摘要、引用脉络与相关文献图谱。",
+    descriptionEn: "Allen AI's free scholarly search using NLP to surface summaries, citation context, and related-paper graphs."
+  },
+  {
+    id: "openalex",
+    name: "OpenAlex",
+    category: "general",
+    origin: "全球",
+    access: "open",
+    url: "https://openalex.org/",
+    tags: ["开放数据", "学术图谱", "免费"],
+    description: "开放的学术元数据库，收录 2.5 亿+作品、作者与机构，含免费API，适合文献计量分析。",
+    descriptionEn: "An open scholarly metadata database of 250M+ works, authors, and institutions with a free API for bibliometrics."
+  },
+  {
+    id: "base-search",
+    name: "BASE",
+    category: "general",
+    origin: "欧洲",
+    access: "open",
+    url: "https://www.base-search.net/",
+    tags: ["开放获取", "学术搜索", "元数据"],
+    description: "德国比勒费尔德大学的开放获取学术搜索引擎，聚合全球仓储的数亿条文献元数据。",
+    descriptionEn: "Bielefeld University's open-access academic search engine aggregating hundreds of millions of records from repositories."
+  },
+  {
+    id: "core-ac",
+    name: "CORE",
+    category: "general",
+    origin: "英国",
+    access: "open",
+    url: "https://core.ac.uk/",
+    tags: ["开放获取", "全文聚合", "免费"],
+    description: "全球最大的开放获取论文全文聚合平台，提供检索、API 与数据集下载。",
+    descriptionEn: "The world's largest aggregator of open-access full texts, offering search, an API, and dataset downloads."
+  },
+  {
+    id: "web-of-science",
+    name: "Web of Science",
+    category: "index",
+    origin: "全球",
+    access: "subscription",
+    url: "https://www.webofscience.com/",
+    tags: ["引文索引", "核心合集", "文献计量"],
+    description: "权威引文索引数据库，核心合集适合系统综述、引文追踪与期刊层面分析（多需机构订阅）。",
+    descriptionEn: "An authoritative citation index; its Core Collection suits systematic reviews and citation tracking (subscription)."
+  },
+  {
+    id: "scopus",
+    name: "Scopus",
+    category: "index",
+    origin: "全球",
+    access: "subscription",
+    url: "https://www.scopus.com/",
+    tags: ["引文索引", "摘要库", "文献计量"],
+    description: "爱思唯尔的大型同行评审文献摘要与引文库，覆盖科学、社科与人文（多需机构订阅）。",
+    descriptionEn: "Elsevier's large abstract and citation database of peer-reviewed literature across sciences, social sciences, and humanities (subscription)."
+  },
+  {
+    id: "dimensions",
+    name: "Dimensions",
+    category: "index",
+    origin: "全球",
+    access: "open",
+    url: "https://www.dimensions.ai/",
+    tags: ["引文索引", "科研情报", "免费"],
+    description: "关联论文、专利、基金与临床试验的科研情报平台，提供免费版检索。",
+    descriptionEn: "A research-intelligence platform linking papers, patents, grants, and trials, with a free search tier."
+  },
+  {
+    id: "lens-org",
+    name: "The Lens",
+    category: "index",
+    origin: "全球",
+    access: "open",
+    url: "https://www.lens.org/",
+    tags: ["文献专利", "开放获取", "检索"],
+    description: "免费整合学术文献与全球专利的检索分析平台，适合创新与技术演进研究。",
+    descriptionEn: "A free platform integrating scholarly works and global patents for innovation and technology-trend analysis."
+  },
+  {
+    id: "arxiv",
+    name: "arXiv",
+    category: "oa",
+    origin: "全球",
+    access: "open",
+    url: "https://arxiv.org/",
+    tags: ["预印本", "开放获取", "免费"],
+    description: "康奈尔大学的开放预印本库，城市计算、空间分析等方向可获取最新未刊研究。",
+    descriptionEn: "Cornell's open preprint server; a source of the latest unpublished work in urban computing and spatial analysis."
+  },
+  {
+    id: "doaj",
+    name: "DOAJ",
+    category: "oa",
+    origin: "全球",
+    access: "open",
+    url: "https://doaj.org/",
+    tags: ["开放获取", "期刊目录", "免费"],
+    description: "开放获取期刊目录，收录经审核的高质量 OA 期刊与文章，可按学科检索。",
+    descriptionEn: "The Directory of Open Access Journals, indexing vetted high-quality OA journals and articles searchable by discipline."
+  },
+  {
+    id: "ssrn",
+    name: "SSRN",
+    category: "oa",
+    origin: "全球",
+    access: "open",
+    url: "https://www.ssrn.com/",
+    tags: ["预印本", "社会科学", "开放获取"],
+    description: "社会科学预印本与工作论文库，城市经济、规划与政策研究的早期成果常在此发布。",
+    descriptionEn: "A social-sciences preprint and working-paper repository where early urban economics, planning, and policy work often appears."
+  },
+  {
+    id: "ia-scholar",
+    name: "Internet Archive Scholar",
+    category: "oa",
+    origin: "全球",
+    access: "open",
+    url: "https://scholar.archive.org/",
+    tags: ["开放获取", "全文存档", "免费"],
+    description: "互联网档案馆的学术全文检索，专注长期保存的开放获取论文与灰色文献。",
+    descriptionEn: "The Internet Archive's scholarly full-text search focused on preserved open-access papers and grey literature."
+  },
+  {
+    id: "cnki",
+    name: "中国知网 CNKI",
+    category: "cn",
+    origin: "中国",
+    access: "subscription",
+    url: "https://www.cnki.net/",
+    tags: ["中文库", "期刊论文", "学位论文"],
+    description: "中国最大的学术文献库，覆盖期刊、学位论文、会议与年鉴，中文城市研究首选（多需订阅）。",
+    descriptionEn: "China's largest academic database spanning journals, theses, conferences, and yearbooks; the primary Chinese-language source (subscription)."
+  },
+  {
+    id: "wanfang",
+    name: "万方数据",
+    category: "cn",
+    origin: "中国",
+    access: "subscription",
+    url: "https://www.wanfangdata.com.cn/",
+    tags: ["中文库", "期刊论文", "学位论文"],
+    description: "综合性中文文献库，含期刊、学位论文、会议与标准，常与知网互补（多需订阅）。",
+    descriptionEn: "A comprehensive Chinese-language database of journals, theses, conferences, and standards, complementary to CNKI (subscription)."
+  },
+  {
+    id: "ncpssd",
+    name: "国家哲学社会科学文献中心",
+    category: "cn",
+    origin: "中国",
+    access: "open",
+    url: "https://www.ncpssd.org/",
+    tags: ["中文库", "社会科学", "免费"],
+    description: "国家级哲学社会科学文献平台，免费提供大量中文社科期刊与文献全文检索。",
+    descriptionEn: "A national platform offering free full-text search of a large body of Chinese social-science journals and literature."
+  },
+  {
+    id: "duxiu",
+    name: "超星读秀",
+    category: "cn",
+    origin: "中国",
+    access: "subscription",
+    url: "https://www.duxiu.com/",
+    tags: ["中文库", "图书文献", "学术搜索"],
+    description: "以图书为核心的中文知识搜索平台，可检索海量图书章节与学术文献（多需机构订阅）。",
+    descriptionEn: "A book-centric Chinese knowledge-search platform indexing vast book chapters and academic literature (subscription)."
+  },
+  {
+    id: "connected-papers",
+    name: "Connected Papers",
+    category: "tool",
+    origin: "全球",
+    access: "open",
+    url: "https://www.connectedpapers.com/",
+    tags: ["文献图谱", "可视化探索", "免费"],
+    description: "输入一篇论文即生成相关文献关系图，快速把握某议题的经典与前沿脉络。",
+    descriptionEn: "Generates a graph of related papers from a single seed paper to quickly map a topic's key and frontier work."
+  },
+  {
+    id: "scite-ai",
+    name: "scite.ai",
+    category: "tool",
+    origin: "美国",
+    access: "subscription",
+    url: "https://scite.ai/",
+    tags: ["引文分析", "智能引用", "文献评估"],
+    description: "用「智能引用」标注一篇论文被支持还是被反驳，辅助判断文献可靠性（多需订阅）。",
+    descriptionEn: "Uses Smart Citations to show whether a paper is supported or contrasted by citing works, aiding reliability assessment (subscription)."
+  }
+];
+
+// 城市研究经典书籍：城市研究、城市设计与规划领域的经典著作推荐。
+// category: public 公共生活 | theory 城市理论 | form 城市形态 | design 城市设计
+// 链接由书名生成豆瓣搜索入口（见 app.js bookUrl）。
+const BOOKS = [
+  {
+    id: "cities-for-people",
+    title: "人性化的城市",
+    titleEn: "Cities for People",
+    author: "扬·盖尔 Jan Gehl",
+    year: 2010,
+    category: "public",
+    tags: ["公共空间", "人的尺度", "城市设计"],
+    description: "从人的感官与尺度出发，系统论述如何营造有活力、安全、可持续的人性化城市空间。",
+    descriptionEn: "Argues for human-scale cities, showing how to design lively, safe, and sustainable public spaces around people's senses."
+  },
+  {
+    id: "life-between-buildings",
+    title: "交往与空间",
+    titleEn: "Life Between Buildings",
+    author: "扬·盖尔 Jan Gehl",
+    year: 1971,
+    category: "public",
+    tags: ["公共空间", "公共生活", "步行"],
+    description: "盖尔的奠基之作，提出建筑之间的户外活动才是城市生活的核心，影响深远。",
+    descriptionEn: "Gehl's foundational work arguing that outdoor life between buildings is the essence of urban life."
+  },
+  {
+    id: "social-life-small-urban",
+    title: "小城市空间的社会生活",
+    titleEn: "The Social Life of Small Urban Spaces",
+    author: "威廉·H·怀特 William H. Whyte",
+    year: 1980,
+    category: "public",
+    tags: ["公共空间", "行为观察", "广场"],
+    description: "以延时观察记录人在广场与街头的真实行为，用实证方法揭示成功公共空间的规律。",
+    descriptionEn: "Uses time-lapse observation of real behavior in plazas and streets to reveal what makes public spaces succeed."
+  },
+  {
+    id: "how-to-study-public-life",
+    title: "如何研究公共生活",
+    titleEn: "How to Study Public Life",
+    author: "扬·盖尔、比吉特·斯瓦尔 Jan Gehl & Birgitte Svarre",
+    year: 2013,
+    category: "public",
+    tags: ["公共生活", "调研方法", "行为观察"],
+    description: "系统梳理“公共空间—公共生活”的观察与调研方法，是城市观察与实证研究的方法论指南。",
+    descriptionEn: "A methodological guide to observing and studying public life, the toolkit behind public-space/public-life surveys."
+  },
+  {
+    id: "death-and-life",
+    title: "美国大城市的死与生",
+    titleEn: "The Death and Life of Great American Cities",
+    author: "简·雅各布斯 Jane Jacobs",
+    year: 1961,
+    category: "theory",
+    tags: ["城市理论", "城市活力", "社区"],
+    description: "对现代主义规划的经典批判，主张多样性、街道眼与混合功能是城市活力与安全的根基。",
+    descriptionEn: "A landmark critique of modernist planning, championing diversity, eyes on the street, and mixed use as the basis of urban vitality."
+  },
+  {
+    id: "city-in-history",
+    title: "城市发展史",
+    titleEn: "The City in History",
+    author: "刘易斯·芒福德 Lewis Mumford",
+    year: 1961,
+    category: "theory",
+    tags: ["城市史", "城市理论", "文明"],
+    description: "跨越数千年的城市文明通史，探讨城市的起源、演变及其与人类社会的关系。",
+    descriptionEn: "A sweeping history of the city across millennia, tracing its origins, evolution, and role in human civilization."
+  },
+  {
+    id: "triumph-of-city",
+    title: "城市的胜利",
+    titleEn: "Triumph of the City",
+    author: "爱德华·格莱泽 Edward Glaeser",
+    year: 2011,
+    category: "theory",
+    tags: ["城市经济", "集聚", "城市理论"],
+    description: "从经济学视角论证城市因人的集聚而繁荣，是创新、机遇与可持续的引擎。",
+    descriptionEn: "An economist's case that cities thrive on human proximity, driving innovation, opportunity, and sustainability."
+  },
+  {
+    id: "garden-cities",
+    title: "明日的田园城市",
+    titleEn: "Garden Cities of To-morrow",
+    author: "埃比尼泽·霍华德 Ebenezer Howard",
+    year: 1902,
+    category: "theory",
+    tags: ["规划史", "田园城市", "城市理论"],
+    description: "提出“田园城市”构想，兼顾城市与乡村之长，深刻影响了现代城市规划的方向。",
+    descriptionEn: "Introduces the Garden City ideal combining town and country, profoundly shaping modern town planning."
+  },
+  {
+    id: "image-of-city",
+    title: "城市意象",
+    titleEn: "The Image of the City",
+    author: "凯文·林奇 Kevin Lynch",
+    year: 1960,
+    category: "form",
+    tags: ["城市形态", "城市意象", "认知地图"],
+    description: "提出道路、边界、区域、节点、标志物五要素，奠定城市可读性与意象研究的基础。",
+    descriptionEn: "Introduces paths, edges, districts, nodes, and landmarks, founding the study of urban legibility and imageability."
+  },
+  {
+    id: "good-city-form",
+    title: "城市形态",
+    titleEn: "Good City Form",
+    author: "凯文·林奇 Kevin Lynch",
+    year: 1981,
+    category: "form",
+    tags: ["城市形态", "规划理论", "城市设计"],
+    description: "系统构建评价“好的城市形态”的价值维度与理论框架，是城市设计的重要理论著作。",
+    descriptionEn: "Builds a value framework for evaluating what makes good city form, a key theoretical work in urban design."
+  },
+  {
+    id: "collage-city",
+    title: "拼贴城市",
+    titleEn: "Collage City",
+    author: "柯林·罗、弗瑞德·科特 Colin Rowe & Fred Koetter",
+    year: 1978,
+    category: "form",
+    tags: ["城市形态", "城市设计", "城市肌理"],
+    description: "批判现代主义乌托邦式规划，主张以“拼贴”方式包容历史层积与多元城市肌理。",
+    descriptionEn: "Critiques utopian modernist planning, proposing 'collage' to embrace historical layering and plural urban fabric."
+  },
+  {
+    id: "aesthetic-townscape",
+    title: "街道的美学",
+    titleEn: "The Aesthetic Townscape",
+    author: "芦原义信 Yoshinobu Ashihara",
+    year: 1979,
+    category: "design",
+    tags: ["街道设计", "城市美学", "外部空间"],
+    description: "从东西方对比出发，剖析街道、外部空间与建筑边界的美学与尺度关系。",
+    descriptionEn: "Analyzes the aesthetics and scale of streets, exterior space, and building edges, comparing East and West."
+  },
+  {
+    id: "pattern-language",
+    title: "建筑模式语言",
+    titleEn: "A Pattern Language",
+    author: "克里斯托弗·亚历山大等 Christopher Alexander et al.",
+    year: 1977,
+    category: "design",
+    tags: ["模式语言", "城市设计", "建成环境"],
+    description: "以 253 个从城市到建筑的“模式”，提供营造宜居环境的可组合设计语言。",
+    descriptionEn: "Offers 253 composable 'patterns' from city to building scale as a design language for humane environments."
+  },
+  {
+    id: "great-streets",
+    title: "伟大的街道",
+    titleEn: "Great Streets",
+    author: "阿兰·B·雅各布斯 Allan B. Jacobs",
+    year: 1993,
+    category: "design",
+    tags: ["街道设计", "公共空间", "城市设计"],
+    description: "通过大量世界街道的实测与图解，归纳出成就“伟大街道”的空间要素与尺度。",
+    descriptionEn: "Draws on measured drawings of streets worldwide to distill the spatial elements that make streets great."
+  },
+  {
+    id: "walkable-city",
+    title: "适宜步行的城市",
+    titleEn: "Walkable City",
+    author: "杰夫·斯佩克 Jeff Speck",
+    year: 2012,
+    category: "design",
+    tags: ["步行城市", "街道设计", "可持续"],
+    description: "提出“步行性通用理论”，从安全、有趣、舒适、有用四方面推动城市重回步行尺度。",
+    descriptionEn: "Presents a 'general theory of walkability', arguing walks must be safe, interesting, comfortable, and useful."
   }
 ];
 

@@ -1,7 +1,12 @@
 const state = {
   sourceFilter: "all",
+  litFilter: "all",
+  dataFilter: "all",
+  vizFilter: "all",
+  bookFilter: "all",
   feedFilter: "all",
   query: "",
+  queryRaw: "",
   feedItems: [],
   feedPool: [],
   feedCursor: 0,
@@ -14,6 +19,67 @@ const FEED_POOL_LIMIT = 120;
 const FEED_CONCURRENCY = 10;
 const FETCH_TIMEOUT_MS = 6000;
 
+// 多个公共 CORS 代理，按顺序兜底；任一可用即返回。
+// {build} 接收原始 url，返回代理后的请求地址。
+const CORS_PROXIES = [
+  (url) => `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
+  (url) => `https://corsproxy.io/?url=${encodeURIComponent(url)}`,
+  (url) => `https://thingproxy.freeboard.io/fetch/${url}`
+];
+
+// 抓取结果缓存：同一 url 在该时间窗内复用，避免每次刷新都重新请求。
+const FETCH_CACHE_TTL_MS = 30 * 60 * 1000; // 30 分钟
+const FETCH_CACHE_PREFIX = "scl:fetch:";
+
+const SOURCE_LOGO_OVERRIDES = {
+  "mit-senseable": { domains: ["mit.edu"] },
+  "mit-city-form": { domains: ["mit.edu"] },
+  "harvard-maps": { domains: ["gsd.harvard.edu", "harvard.edu"] },
+  "harvard-real": { domains: ["gsd.harvard.edu", "harvard.edu"] },
+  "beijing-city-lab": { domains: ["www.beijingcitylab.com"] },
+  "hku-dil": { domains: ["hku.hk"] },
+  "shanghai-global-city": {
+    urls: ["https://www.shnu.edu.cn/_upload/tpl/03/a5/933/template933/images/logo.svg"],
+    domains: ["shnu.edu.cn"]
+  },
+  "src-street": { urls: ["http://www.streetsrc.com/template/Index/Common/img/logo.png"] },
+  "columbia-csr": { domains: ["columbia.edu", "c4sr.columbia.edu"] },
+  "hcu-city-science-lab": {
+    urls: ["https://www.hcu-hamburg.de/fileadmin/images/HCU_Logo.svg"]
+  },
+  "african-centre-cities": {
+    urls: [
+      "https://www.africancentreforcities.net/wp-content/uploads/2020/06/acc-logo-150x150.png",
+      "https://www.africancentreforcities.net/wp-content/uploads/2020/06/acc-logo.png"
+    ],
+    domains: ["africancentreforcities.net", "uct.ac.za"]
+  },
+  "polyu-scri": {
+    urls: ["https://www.polyu.edu.hk/scri/-/media/department/scri/setting/scri_primary_logo_color_horizontal.png?bc=ffffff&h=64&mw=350&rev=6902d82a399845f680336d12bfaf07f4&hash=FFB66F04B22A70EBA869ED2A1CC20A3E"],
+    domains: ["polyu.edu.hk"]
+  },
+  "nature-cities": { domains: ["nature.com"] },
+  epb: { domains: ["sagepub.com", "journals.sagepub.com"] },
+  "urban-studies": { domains: ["sagepub.com", "journals.sagepub.com"] },
+  "journal-planning-education-research": { domains: ["sagepub.com", "journals.sagepub.com"] },
+  "journal-planning-literature": { domains: ["sagepub.com", "journals.sagepub.com"] },
+  "environment-urbanization": { domains: ["sagepub.com", "journals.sagepub.com"] },
+  "environment-urbanization-asia": { domains: ["sagepub.com", "journals.sagepub.com"] },
+  "european-urban-regional-studies": { domains: ["sagepub.com", "journals.sagepub.com"] },
+  "journal-urban-history": { domains: ["sagepub.com", "journals.sagepub.com"] },
+  "urban-research-practice": { domains: ["taylorandfrancis.com", "tandfonline.com"] },
+  "journal-urban-affairs": { domains: ["taylorandfrancis.com", "tandfonline.com"] },
+  "urban-geography": { domains: ["taylorandfrancis.com", "tandfonline.com"] },
+  "journal-urban-technology": { domains: ["taylorandfrancis.com", "tandfonline.com"] },
+  "journal-urban-design": { domains: ["taylorandfrancis.com", "tandfonline.com"] },
+  "city-journal": { domains: ["taylorandfrancis.com", "tandfonline.com"] },
+  "housing-studies": { domains: ["taylorandfrancis.com", "tandfonline.com"] },
+  "city-community": { domains: ["wiley.com", "onlinelibrary.wiley.com"] },
+  ijurr: { domains: ["wiley.com", "onlinelibrary.wiley.com"] },
+  "springer-urban-studies": { domains: ["springer.com"] },
+  "urban-ecosystems": { domains: ["springer.com", "link.springer.com"] }
+};
+
 const i18n = {
   zh: {
     meta: {
@@ -21,7 +87,7 @@ const i18n = {
       description: "用于快速查阅全球城市研究实验室、研究机构与城市研究期刊最新动态的前沿资讯导航站。"
     },
     brand: { title: "SCL城市研究所" },
-    nav: { home: "首页", library: "资源库", materials: "资料下载" },
+    nav: { home: "首页", library: "资源库", literature: "文献检索", bigdata: "多源数据", dataviz: "可视化工具", books: "书籍推荐" },
     hero: {
       title: "SCL城市研究所资源库",
       lede: "SCL城市研究所资源库用于追踪全球城市研究机构、实验室与期刊的最新动态，集中呈现研究进展、论文发布与官方资讯入口。",
@@ -37,11 +103,22 @@ const i18n = {
       official: "官网",
       latest: "最新入口",
       openSource: "打开来源",
-      download: "下载资料"
+      download: "下载资料",
+      open: "打开",
+      book: "图书条目"
     },
     search: {
-      label: "检索来源或主题",
-      placeholder: "例如 MIT、城市分析、期刊、交通、空间数据"
+      label: "全站检索",
+      placeholder: "搜索机构、期刊、数据、工具、主题关键词",
+      resultSummary: (count, query) => `找到 ${count} 个与“${query}”相关的内容`,
+      noResults: (query) => `没有找到与“${query}”匹配的内容`,
+      page: "页面",
+      source: "机构资源",
+      literature: "文献检索",
+      dataSource: "多源数据",
+      vizTool: "可视化工具",
+      book: "经典书籍",
+      news: "资讯"
     },
     metrics: { sources: "已纳入来源", journals: "期刊与出版", labs: "实验室与机构" },
     feed: {
@@ -63,12 +140,56 @@ const i18n = {
       title: "城市研究机构",
       empty: "没有匹配的来源，换个关键词试试。"
     },
-    materials: {
-      title: "研究资料下载",
-      description: "摘取小红书账号提到的城市研究、街道设计、城市更新与公共空间资料，后续可继续补充下载链接。",
-      sourceLink: "查看小红书来源",
-      empty: "没有匹配的研究资料，换个关键词试试。",
-      pending: "下载链接待补充"
+    literature: {
+      title: "学术文献与检索",
+      note: "面向城市研究的文献检索入口：综合搜索、引文索引、开放获取、中文库与文献探索工具。标注「需订阅」的多需机构订阅或登录。",
+      empty: "没有匹配的文献入口，换个关键词试试。"
+    },
+    litCat: {
+      all: "全部",
+      general: "综合检索",
+      index: "引文索引",
+      oa: "开放获取",
+      cn: "中文文献",
+      tool: "探索工具"
+    },
+    bigdata: {
+      title: "城市多源大数据",
+      note: "面向城市研究的多源数据入口：政府开放数据、地理与遥感、时空人口、地图API与专题数据，均链接至官方下载或接口。",
+      empty: "没有匹配的数据源，换个关键词试试。"
+    },
+    dataviz: {
+      title: "数据可视化工具",
+      note: "用于把城市数据转化为图表与地图的工具：图表与BI、地理可视化、编程库、词云文本与统计分析。",
+      empty: "没有匹配的工具，换个关键词试试。"
+    },
+    dataCat: {
+      all: "全部",
+      gov: "政府开放",
+      geo: "地理遥感",
+      mobility: "时空人口",
+      api: "地图API",
+      thematic: "专题数据"
+    },
+    vizCat: {
+      all: "全部",
+      chart: "图表与BI",
+      geo: "地理可视化",
+      code: "编程库",
+      text: "词云文本",
+      stat: "统计分析"
+    },
+    books: {
+      title: "城市研究经典书籍",
+      note: "精选城市研究、城市设计与规划领域的经典著作，涵盖公共生活、城市理论、城市形态与城市设计。",
+      empty: "没有匹配的书籍，换个关键词试试。"
+    },
+    bookCat: {
+      all: "全部",
+      public: "公共生活",
+      theory: "城市理论",
+      form: "城市形态",
+      design: "城市设计"
     },
     filters: {
       all: "全部",
@@ -88,11 +209,12 @@ const i18n = {
       dynamic: "动态入口",
       note: "使用提示",
       keywords: "关键词",
-      summary: "初步总结"
+      summary: "初步总结",
+      subscription: "需订阅"
     },
     footer: {
       title: "SCL城市研究所",
-      source: "数据来源：favorites_2026_6_27.html 相关收藏夹与本次全球城市研究来源检索。",
+      source: "数据来源：城市研究相关收藏夹与本次全球城市研究来源检索。",
       scope: "全球城市研究实验室、机构与期刊导航",
       count: "76 个来源 · 支持中英文检索",
       library: "查看资源库",
@@ -105,7 +227,7 @@ const i18n = {
       description: "A curated navigation site for global urban research labs, institutions, journals, and recent signals."
     },
     brand: { title: "SCL Urban Research Institute" },
-    nav: { home: "Home", library: "Library", materials: "Downloads" },
+    nav: { home: "Home", library: "Library", literature: "Literature", bigdata: "Big Data", dataviz: "Viz Tools", books: "Books" },
     hero: {
       title: "SCL Urban Research Institute Library",
       lede: "The SCL Urban Research Institute Library tracks updates from global urban research institutions, labs, and journals, bringing research progress, paper releases, and official source links into one place.",
@@ -121,11 +243,22 @@ const i18n = {
       official: "Official Site",
       latest: "Latest Entry",
       openSource: "Open Source",
-      download: "Download"
+      download: "Download",
+      open: "Open",
+      book: "Book Page"
     },
     search: {
-      label: "Search sources or topics",
-      placeholder: "Try MIT, urban analytics, journals, transport, spatial data"
+      label: "Site Search",
+      placeholder: "Search institutions, journals, data, tools, and topics",
+      resultSummary: (count, query) => `${count} results for "${query}"`,
+      noResults: (query) => `No results found for "${query}"`,
+      page: "Page",
+      source: "Source",
+      literature: "Literature",
+      dataSource: "Big Data",
+      vizTool: "Viz Tool",
+      book: "Book",
+      news: "News"
     },
     metrics: { sources: "included sources", journals: "journals & publishing", labs: "labs & institutions" },
     feed: {
@@ -147,12 +280,56 @@ const i18n = {
       title: "Urban Research Institutions",
       empty: "No sources match this search. Try a different keyword."
     },
-    materials: {
-      title: "Research Downloads",
-      description: "A growing list of urban research, street design, urban regeneration, and public-space resources mentioned by the Xiaohongshu account.",
-      sourceLink: "View Xiaohongshu Source",
-      empty: "No research materials match this search. Try a different keyword.",
-      pending: "Download link pending"
+    literature: {
+      title: "Academic Literature & Search",
+      note: "Literature-search entries for urban research: general search, citation indexes, open access, Chinese databases, and discovery tools. Items marked \"Subscription\" usually require institutional access.",
+      empty: "No literature entries match this search. Try a different keyword."
+    },
+    litCat: {
+      all: "All",
+      general: "General Search",
+      index: "Citation Index",
+      oa: "Open Access",
+      cn: "Chinese DB",
+      tool: "Discovery"
+    },
+    bigdata: {
+      title: "Urban Multi-source Big Data",
+      note: "Multi-source data entries for urban research: open government data, geospatial and remote sensing, spatiotemporal population, map APIs, and thematic data — each links to an official download or API.",
+      empty: "No data sources match this search. Try a different keyword."
+    },
+    dataviz: {
+      title: "Data Visualization Tools",
+      note: "Tools to turn urban data into charts and maps: charts and BI, geovisualization, programming libraries, word clouds and text, and statistical analysis.",
+      empty: "No tools match this search. Try a different keyword."
+    },
+    dataCat: {
+      all: "All",
+      gov: "Open Gov",
+      geo: "Geo & RS",
+      mobility: "People & Time",
+      api: "Map API",
+      thematic: "Thematic"
+    },
+    vizCat: {
+      all: "All",
+      chart: "Charts & BI",
+      geo: "Geovisualization",
+      code: "Libraries",
+      text: "Word Cloud",
+      stat: "Statistics"
+    },
+    books: {
+      title: "Classic Urban Studies Books",
+      note: "A curated shelf of classics in urban studies, urban design, and planning — spanning public life, urban theory, urban form, and urban design.",
+      empty: "No books match this search. Try a different keyword."
+    },
+    bookCat: {
+      all: "All",
+      public: "Public Life",
+      theory: "Urban Theory",
+      form: "Urban Form",
+      design: "Urban Design"
     },
     filters: {
       all: "All",
@@ -172,11 +349,12 @@ const i18n = {
       dynamic: "Update Entry",
       note: "Usage Note",
       keywords: "Keywords",
-      summary: "First-pass Summary"
+      summary: "First-pass Summary",
+      subscription: "Subscription"
     },
     footer: {
       title: "SCL Urban Research Institute",
-      source: "Sources: relevant bookmarks from favorites_2026_6_27.html and this global urban research scan.",
+      source: "Sources: curated urban-research bookmarks and this global urban research scan.",
       scope: "A global navigation library for urban research labs, institutions, and journals",
       count: "76 sources · bilingual search supported",
       library: "View Library",
@@ -366,7 +544,128 @@ const tagTranslations = {
   "长三角": "Yangtze River Delta",
   "非洲城市": "African cities",
   "韧性": "resilience",
-  "预印本": "preprints"
+  "预印本": "preprints",
+  "政府数据": "government data",
+  "人口数据": "population data",
+  "社会经济": "socioeconomic",
+  "全球指标": "global indicators",
+  "经济数据": "economic data",
+  "统计数据": "statistics",
+  "人道数据": "humanitarian data",
+  "遥感": "remote sensing",
+  "卫星影像": "satellite imagery",
+  "高程数据": "elevation data",
+  "对地观测": "earth observation",
+  "地理空间": "geospatial",
+  "云计算": "cloud computing",
+  "开放地图": "open map data",
+  "行政边界": "administrative boundaries",
+  "栅格数据": "gridded data",
+  "时空数据": "spatiotemporal data",
+  "位置大数据": "location big data",
+  "人口热力": "population heat",
+  "移动数据": "mobile data",
+  "地理大数据": "geospatial big data",
+  "决策咨询": "decision consulting",
+  "数据社区": "data community",
+  "地图API": "map API",
+  "路径规划": "routing",
+  "人口迁徙": "population flows",
+  "气象数据": "meteorological data",
+  "交通数据": "traffic data",
+  "拥堵指数": "congestion index",
+  "搜索指数": "search index",
+  "舆情": "public opinion",
+  "趋势分析": "trend analysis",
+  "地铁客流": "metro ridership",
+  "可视化": "visualization",
+  "可视化库": "visualization library",
+  "图表库": "charting library",
+  "在线图表": "online charts",
+  "商业智能": "business intelligence",
+  "仪表盘": "dashboards",
+  "数据分析": "data analytics",
+  "数据新闻": "data journalism",
+  "探索性可视化": "exploratory visualization",
+  "动态可视化": "animated visualization",
+  "图形语法": "grammar of graphics",
+  "快速绘图": "rapid charting",
+  "声明式": "declarative",
+  "多语言": "multi-language",
+  "交互图表": "interactive charts",
+  "开源": "open source",
+  "WebGL": "WebGL",
+  "地理可视化": "geovisualization",
+  "大数据地图": "big-data maps",
+  "大规模数据": "large-scale data",
+  "三维可视化": "3D visualization",
+  "数据探索": "data exploration",
+  "交互": "interaction",
+  "流向图": "flow maps",
+  "OD可视化": "OD visualization",
+  "交互地图": "interactive maps",
+  "地图库": "mapping library",
+  "空间可视化": "spatial visualization",
+  "在线制图": "online mapping",
+  "数据地图": "data maps",
+  "图可视化": "graph visualization",
+  "地图制图": "cartography",
+  "词云": "word cloud",
+  "文本可视化": "text visualization",
+  "词频分析": "word frequency",
+  "在线工具": "online tool",
+  "统计分析": "statistical analysis",
+  "在线SPSS": "online SPSS",
+  "问卷分析": "survey analysis",
+  "图表词典": "chart dictionary",
+  "设计参考": "design reference",
+  "AntV": "AntV",
+  "SVG": "SVG",
+  "学术搜索": "academic search",
+  "免费": "free",
+  "引文追踪": "citation tracking",
+  "AI检索": "AI search",
+  "论文图谱": "paper graph",
+  "学术图谱": "scholarly graph",
+  "元数据": "metadata",
+  "全文聚合": "full-text aggregation",
+  "引文索引": "citation index",
+  "核心合集": "core collection",
+  "文献计量": "bibliometrics",
+  "摘要库": "abstract database",
+  "科研情报": "research intelligence",
+  "文献专利": "papers & patents",
+  "检索": "search",
+  "期刊目录": "journal directory",
+  "全文存档": "full-text archive",
+  "中文库": "Chinese database",
+  "期刊论文": "journal papers",
+  "学位论文": "theses & dissertations",
+  "图书文献": "books & literature",
+  "文献图谱": "literature graph",
+  "可视化探索": "visual discovery",
+  "引文分析": "citation analysis",
+  "智能引用": "smart citations",
+  "文献评估": "literature assessment",
+  "人的尺度": "human scale",
+  "公共生活": "public life",
+  "步行": "walking",
+  "行为观察": "behavioral observation",
+  "广场": "plazas",
+  "调研方法": "survey methods",
+  "城市活力": "urban vitality",
+  "文明": "civilization",
+  "集聚": "agglomeration",
+  "规划史": "planning history",
+  "田园城市": "garden city",
+  "城市意象": "urban imageability",
+  "认知地图": "cognitive mapping",
+  "城市肌理": "urban fabric",
+  "城市美学": "urban aesthetics",
+  "外部空间": "exterior space",
+  "模式语言": "pattern language",
+  "步行城市": "walkability",
+  "可持续": "sustainability"
 };
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -374,8 +673,12 @@ document.addEventListener("DOMContentLoaded", () => {
   applyTranslations();
   renderMetrics();
   renderSources();
-  renderMaterials();
+  renderLiterature();
+  renderDataSources();
+  renderVizTools();
+  renderBooks();
   renderFeed(getFeedSeedItems());
+  renderGlobalSearchResults();
 });
 
 function bindEvents() {
@@ -388,6 +691,43 @@ function bindEvents() {
       state.sourceFilter = button.dataset.sourceFilter;
       setActiveButton("[data-source-filter]", button);
       renderSources();
+      renderGlobalSearchResults();
+    });
+  });
+
+  document.querySelectorAll("[data-lit-filter]").forEach((button) => {
+    button.addEventListener("click", () => {
+      state.litFilter = button.dataset.litFilter;
+      setActiveButton("[data-lit-filter]", button);
+      renderLiterature();
+      renderGlobalSearchResults();
+    });
+  });
+
+  document.querySelectorAll("[data-data-filter]").forEach((button) => {
+    button.addEventListener("click", () => {
+      state.dataFilter = button.dataset.dataFilter;
+      setActiveButton("[data-data-filter]", button);
+      renderDataSources();
+      renderGlobalSearchResults();
+    });
+  });
+
+  document.querySelectorAll("[data-viz-filter]").forEach((button) => {
+    button.addEventListener("click", () => {
+      state.vizFilter = button.dataset.vizFilter;
+      setActiveButton("[data-viz-filter]", button);
+      renderVizTools();
+      renderGlobalSearchResults();
+    });
+  });
+
+  document.querySelectorAll("[data-book-filter]").forEach((button) => {
+    button.addEventListener("click", () => {
+      state.bookFilter = button.dataset.bookFilter;
+      setActiveButton("[data-book-filter]", button);
+      renderBooks();
+      renderGlobalSearchResults();
     });
   });
 
@@ -396,17 +736,25 @@ function bindEvents() {
       state.feedFilter = button.dataset.feedFilter;
       setActiveButton("[data-feed-filter]", button);
       renderFeed(state.feedItems.length ? state.feedItems : getFeedSeedItems());
+      renderGlobalSearchResults();
     });
   });
 
   document.getElementById("globalSearch").addEventListener("input", (event) => {
-    state.query = event.target.value.trim().toLowerCase();
+    state.queryRaw = event.target.value.trim();
+    state.query = state.queryRaw.toLowerCase();
     renderSources();
-    renderMaterials();
+    renderLiterature();
+    renderDataSources();
+    renderVizTools();
+    renderBooks();
     renderFeed(state.feedItems.length ? state.feedItems : getFeedSeedItems());
+    renderGlobalSearchResults();
   });
 
   document.getElementById("refreshFeeds").addEventListener("click", refreshFrontiers);
+
+  initFilterAria();
 }
 
 function setLanguage(lang) {
@@ -416,8 +764,12 @@ function setLanguage(lang) {
   applyTranslations();
   renderMetrics();
   renderSources();
-  renderMaterials();
+  renderLiterature();
+  renderDataSources();
+  renderVizTools();
+  renderBooks();
   renderFeed(state.feedItems.length ? state.feedItems : getFeedSeedItems());
+  renderGlobalSearchResults();
   updateRefreshButton();
   updateFeedStatus();
 }
@@ -451,8 +803,20 @@ function applyTranslations() {
 }
 
 function setActiveButton(selector, activeButton) {
-  document.querySelectorAll(selector).forEach((button) => button.classList.remove("is-active"));
-  activeButton.classList.add("is-active");
+  document.querySelectorAll(selector).forEach((button) => {
+    const active = button === activeButton;
+    button.classList.toggle("is-active", active);
+    button.setAttribute("aria-pressed", String(active));
+  });
+}
+
+// 为筛选按钮组设置初始 aria-pressed（与 .is-active 对齐）。
+function initFilterAria() {
+  ["[data-source-filter]", "[data-lit-filter]", "[data-data-filter]", "[data-viz-filter]", "[data-book-filter]", "[data-feed-filter]"].forEach((selector) => {
+    document.querySelectorAll(selector).forEach((button) => {
+      button.setAttribute("aria-pressed", String(button.classList.contains("is-active")));
+    });
+  });
 }
 
 function renderMetrics() {
@@ -474,11 +838,15 @@ function renderSources() {
 
   grid.innerHTML = sources.map((source) => `
     <article class="source-card source-card--${source.type}">
-      <div class="card-topline">
-        <span class="pill">${escapeHtml(sourceTypeLabel(source.type))}</span>
-        <span>${escapeHtml(localizeRegion(source.region))}</span>
-      </div>
-      <h3>${escapeHtml(source.name)}</h3>
+      <h3 class="source-title">
+        <span class="source-title-main">
+          <span class="source-logo" data-fallback="${escapeHtml(sourceLogoInitials(source.name))}" aria-hidden="true">
+            ${sourceLogoImage(source)}
+          </span>
+          <span>${escapeHtml(source.name)}</span>
+        </span>
+        <span class="source-region">${escapeHtml(localizeRegion(source.region))}</span>
+      </h3>
       <p>${escapeHtml(sourceDescription(source))}</p>
       <div class="tag-row">
         ${source.tags.map((tag) => `<span>${escapeHtml(localizeTag(tag))}</span>`).join("")}
@@ -489,76 +857,321 @@ function renderSources() {
       </div>
     </article>
   `).join("");
+  activateSourceLogos(grid);
 }
 
 function filteredSources() {
   return SOURCES.filter((source) => {
-    const matchesType = state.sourceFilter === "all" || source.type === state.sourceFilter;
+    const matchesType = state.query || state.sourceFilter === "all" || source.type === state.sourceFilter;
     return matchesType && (!state.query || searchableSourceText(source).includes(state.query));
   });
 }
 
-function renderMaterials() {
-  const grid = document.getElementById("materialsGrid");
-  if (!grid || typeof RESEARCH_MATERIALS === "undefined") return;
+// 城市多源大数据 / 数据可视化工具 / 学术文献与检索：复用一套卡片渲染。
+function renderDataSources() {
+  renderResourceGrid("bigdataGrid", URBAN_DATA_SOURCES, "data", state.dataFilter, "dataCat", "bigdata.empty");
+}
 
-  const materials = filteredMaterials();
-  if (!materials.length) {
-    grid.innerHTML = `<div class="empty-state">${escapeHtml(t("materials.empty"))}</div>`;
+function renderVizTools() {
+  renderResourceGrid("datavizGrid", DATAVIZ_TOOLS, "viz", state.vizFilter, "vizCat", "dataviz.empty");
+}
+
+function renderLiterature() {
+  renderResourceGrid("literatureGrid", ACADEMIC_SOURCES, "lit", state.litFilter, "litCat", "literature.empty");
+}
+
+// 城市研究经典书籍：专用卡片（含作者与年份），链接到豆瓣搜索。
+function renderBooks() {
+  const grid = document.getElementById("booksGrid");
+  if (!grid || typeof BOOKS === "undefined") return;
+
+  const items = BOOKS.filter((book) => {
+    const matchesCat = state.query || state.bookFilter === "all" || book.category === state.bookFilter;
+    return matchesCat && (!state.query || searchableBookText(book).includes(state.query));
+  });
+
+  if (!items.length) {
+    grid.innerHTML = `<div class="empty-state">${escapeHtml(t("books.empty"))}</div>`;
     return;
   }
 
-  grid.innerHTML = materials.map((material) => `
-    <article class="material-card">
-      <div class="material-cover">
-        <img src="${escapeHtml(material.image)}" alt="${escapeHtml(materialTitle(material))}">
-        <span class="pill">${escapeHtml(materialFormat(material))}</span>
+  grid.innerHTML = items.map((book) => `
+    <article class="resource-card book-card">
+      <div class="resource-top">
+        <span class="resource-cat">${escapeHtml(t(`bookCat.${book.category}`))}</span>
+        <span class="resource-origin">${escapeHtml(String(book.year))}</span>
       </div>
-      <div class="material-body">
-        <h3>${escapeHtml(materialTitle(material))}</h3>
-        <p>${escapeHtml(materialDescription(material))}</p>
-        <div class="tag-row">
-          ${material.tags.map((tag) => `<span>${escapeHtml(localizeTag(tag))}</span>`).join("")}
-        </div>
-        <div class="card-actions material-actions">
-          <a href="${escapeHtml(material.sourceUrl || XIAOHONGSHU_SOURCE_URL)}" target="_blank" rel="noreferrer">${escapeHtml(t("materials.sourceLink"))}</a>
-          ${material.downloadUrl
-            ? `<a href="${escapeHtml(material.downloadUrl)}" target="_blank" rel="noreferrer">${escapeHtml(t("actions.download"))}</a>`
-            : `<span class="disabled-link">${escapeHtml(t("materials.pending"))}</span>`}
-        </div>
+      <h3>${escapeHtml(bookTitle(book))}</h3>
+      <p class="book-author">${escapeHtml(book.author)}</p>
+      <p>${escapeHtml(bookDescription(book))}</p>
+      <div class="tag-row">
+        ${book.tags.map((tag) => `<span>${escapeHtml(localizeTag(tag))}</span>`).join("")}
+      </div>
+      <div class="card-actions">
+        <a href="${bookUrl(book)}" target="_blank" rel="noreferrer">${escapeHtml(t("actions.book"))}</a>
       </div>
     </article>
   `).join("");
 }
 
-function filteredMaterials() {
-  if (typeof RESEARCH_MATERIALS === "undefined") return [];
-  return RESEARCH_MATERIALS.filter((material) => !state.query || searchableMaterialText(material).includes(state.query));
+function bookTitle(book) {
+  return state.lang === "zh" ? book.title : book.titleEn;
 }
 
-function materialTitle(material) {
-  return state.lang === "zh" ? material.title : material.titleEn || material.title;
+function bookDescription(book) {
+  return state.lang === "zh" ? book.description : (book.descriptionEn || book.description);
 }
 
-function materialDescription(material) {
-  return state.lang === "zh" ? material.description : material.descriptionEn || material.description;
+function bookUrl(book) {
+  return `https://search.douban.com/book/subject_search?search_text=${encodeURIComponent(book.title)}`;
 }
 
-function materialFormat(material) {
-  return state.lang === "zh" ? material.format : material.formatEn || material.format;
-}
-
-function searchableMaterialText(material) {
+function searchableBookText(book) {
   return [
-    material.title,
-    material.titleEn,
-    material.format,
-    material.formatEn,
-    material.description,
-    material.descriptionEn,
-    ...material.tags,
-    ...material.tags.map(localizeTag)
+    book.title,
+    book.titleEn,
+    book.author,
+    String(book.year),
+    t(`bookCat.${book.category}`),
+    book.description,
+    book.descriptionEn,
+    ...book.tags,
+    ...book.tags.map(localizeTag)
   ].join(" ").toLowerCase();
+}
+
+function renderResourceGrid(gridId, list, kind, activeFilter, catNamespace, emptyKey) {
+  const grid = document.getElementById(gridId);
+  if (!grid || typeof list === "undefined") return;
+
+  const items = list.filter((item) => {
+    const matchesCat = state.query || activeFilter === "all" || item.category === activeFilter;
+    return matchesCat && (!state.query || searchableResourceText(item, catNamespace).includes(state.query));
+  });
+
+  if (!items.length) {
+    grid.innerHTML = `<div class="empty-state">${escapeHtml(t(emptyKey))}</div>`;
+    return;
+  }
+
+  grid.innerHTML = items.map((item) => `
+    <article class="resource-card resource-card--${kind}">
+      <div class="resource-top">
+        <span class="resource-cat">${escapeHtml(t(`${catNamespace}.${item.category}`))}</span>
+        <span class="resource-top-right">
+          ${item.access === "subscription" ? `<span class="resource-access">${escapeHtml(t("labels.subscription"))}</span>` : ""}
+          <span class="resource-origin">${escapeHtml(localizeRegion(item.origin))}</span>
+        </span>
+      </div>
+      <h3>${escapeHtml(item.name)}</h3>
+      <p>${escapeHtml(resourceDescription(item))}</p>
+      <div class="tag-row">
+        ${item.tags.map((tag) => `<span>${escapeHtml(localizeTag(tag))}</span>`).join("")}
+      </div>
+      <div class="card-actions">
+        <a href="${item.url}" target="_blank" rel="noreferrer">${escapeHtml(t("actions.open"))}</a>
+      </div>
+    </article>
+  `).join("");
+}
+
+function resourceDescription(item) {
+  return state.lang === "zh" ? item.description : (item.descriptionEn || item.description);
+}
+
+function searchableResourceText(item, catNamespace) {
+  return [
+    item.name,
+    item.origin,
+    localizeRegion(item.origin),
+    t(`${catNamespace}.${item.category}`),
+    item.access === "subscription" ? t("labels.subscription") : "",
+    item.description,
+    item.descriptionEn,
+    ...item.tags,
+    ...item.tags.map(localizeTag)
+  ].join(" ").toLowerCase();
+}
+
+function renderGlobalSearchResults() {
+  const panel = document.getElementById("globalSearchResults");
+  if (!panel) return;
+
+  if (!state.query) {
+    panel.hidden = true;
+    panel.innerHTML = "";
+    return;
+  }
+
+  const allResults = buildGlobalSearchItems()
+    .filter((item) => item.searchText.includes(state.query));
+  const results = allResults.slice(0, 12);
+
+  panel.hidden = false;
+  if (!results.length) {
+    panel.innerHTML = `<p class="search-results-empty">${escapeHtml(t("search.noResults")(state.queryRaw || state.query))}</p>`;
+    return;
+  }
+
+  panel.innerHTML = `
+    <div class="search-results-head">${escapeHtml(t("search.resultSummary")(allResults.length, state.queryRaw || state.query))}</div>
+    <div class="search-results-list">
+      ${results.map((item) => `
+        <a class="search-result-item" href="${escapeHtml(item.href)}">
+          <span>${escapeHtml(item.type)}</span>
+          <strong>${escapeHtml(item.title)}</strong>
+          <small>${escapeHtml(item.summary)}</small>
+        </a>
+      `).join("")}
+    </div>
+  `;
+}
+
+function buildGlobalSearchItems() {
+  return [
+    ...pageSearchItems(),
+    ...feedSearchItems(),
+    ...sourceSearchItems(),
+    ...literatureSearchItems(),
+    ...dataSourceSearchItems(),
+    ...vizToolSearchItems(),
+    ...bookSearchItems()
+  ].map((item) => ({
+    ...item,
+    searchText: [
+      item.type,
+      item.title,
+      item.summary,
+      ...(item.keywords || []),
+      ...(item.keywords || []).map(localizeTag)
+    ].join(" ").toLowerCase()
+  }));
+}
+
+function pageSearchItems() {
+  return [
+    {
+      type: t("search.page"),
+      title: t("hero.title"),
+      summary: [t("hero.lede"), t("hero.pointOfficial"), t("hero.pointTopics")].join(" "),
+      href: "#home",
+      keywords: ["SCL城市研究所", "首页", "资源库", "功能介绍"]
+    },
+    {
+      type: t("search.page"),
+      title: t("feed.title"),
+      summary: t("feed.defaultStatus"),
+      href: "#feedTitle",
+      keywords: ["最新资讯", "研究进展", "论文资讯"]
+    },
+    {
+      type: t("search.page"),
+      title: t("library.title"),
+      summary: `${SOURCES.length} ${t("metrics.sources")}，${t("metrics.labs")}，${t("metrics.journals")}`,
+      href: "#library",
+      keywords: ["城市研究机构", "实验室", "机构", "期刊"]
+    },
+    {
+      type: t("search.page"),
+      title: t("literature.title"),
+      summary: t("literature.note"),
+      href: "#literature",
+      keywords: ["学术文献与检索", "文献", "Google Scholar", "知网", "arXiv", "开放获取", "引文"]
+    },
+    {
+      type: t("search.page"),
+      title: t("bigdata.title"),
+      summary: t("bigdata.note"),
+      href: "#bigdata",
+      keywords: ["城市多源大数据", "开放数据", "遥感", "POI", "地图API", "交通数据"]
+    },
+    {
+      type: t("search.page"),
+      title: t("dataviz.title"),
+      summary: t("dataviz.note"),
+      href: "#dataviz",
+      keywords: ["数据可视化工具", "图表", "ECharts", "kepler.gl", "词云", "GIS"]
+    },
+    {
+      type: t("search.page"),
+      title: t("books.title"),
+      summary: t("books.note"),
+      href: "#books",
+      keywords: ["城市研究经典书籍", "人性化的城市", "城市意象", "死与生", "扬·盖尔", "简·雅各布斯"]
+    },
+    {
+      type: t("search.page"),
+      title: t("footer.title"),
+      summary: [t("footer.source"), t("footer.scope"), t("footer.count")].join(" "),
+      href: "#home",
+      keywords: ["数据来源", "页脚", "回到顶部"]
+    }
+  ];
+}
+
+function feedSearchItems() {
+  const items = state.feedItems.length ? state.feedItems : getFeedSeedItems();
+  return items.map((item) => ({
+    type: t("search.news"),
+    title: localizeFeedTitle(item),
+    summary: localizeFeedSummary(item),
+    href: "#feedTitle",
+    keywords: feedKeywords(item)
+  }));
+}
+
+function sourceSearchItems() {
+  return SOURCES.map((source) => ({
+    type: t("search.source"),
+    title: source.name,
+    summary: `${sourceTypeLabel(source.type)} · ${localizeRegion(source.region)} · ${sourceDescription(source)}`,
+    href: "#library",
+    keywords: [source.folder, source.region, sourceTypeLabel(source.type), ...source.tags]
+  }));
+}
+
+function bookSearchItems() {
+  if (typeof BOOKS === "undefined") return [];
+  return BOOKS.map((book) => ({
+    type: t("search.book"),
+    title: bookTitle(book),
+    summary: `${book.author} · ${book.year} · ${bookDescription(book)}`,
+    href: "#books",
+    keywords: [book.title, book.titleEn, book.author, t(`bookCat.${book.category}`), ...book.tags]
+  }));
+}
+
+function literatureSearchItems() {
+  if (typeof ACADEMIC_SOURCES === "undefined") return [];
+  return ACADEMIC_SOURCES.map((item) => ({
+    type: t("search.literature"),
+    title: item.name,
+    summary: `${t(`litCat.${item.category}`)} · ${localizeRegion(item.origin)} · ${resourceDescription(item)}`,
+    href: "#literature",
+    keywords: [item.origin, t(`litCat.${item.category}`), ...item.tags]
+  }));
+}
+
+function dataSourceSearchItems() {
+  if (typeof URBAN_DATA_SOURCES === "undefined") return [];
+  return URBAN_DATA_SOURCES.map((item) => ({
+    type: t("search.dataSource"),
+    title: item.name,
+    summary: `${t(`dataCat.${item.category}`)} · ${localizeRegion(item.origin)} · ${resourceDescription(item)}`,
+    href: "#bigdata",
+    keywords: [item.origin, t(`dataCat.${item.category}`), ...item.tags]
+  }));
+}
+
+function vizToolSearchItems() {
+  if (typeof DATAVIZ_TOOLS === "undefined") return [];
+  return DATAVIZ_TOOLS.map((item) => ({
+    type: t("search.vizTool"),
+    title: item.name,
+    summary: `${t(`vizCat.${item.category}`)} · ${localizeRegion(item.origin)} · ${resourceDescription(item)}`,
+    href: "#dataviz",
+    keywords: [item.origin, t(`vizCat.${item.category}`), ...item.tags]
+  }));
 }
 
 function renderFeed(items) {
@@ -614,6 +1227,7 @@ function updateRefreshButton() {
 function updateFeedStatus(added = 0) {
   const status = document.getElementById("feedStatus");
   if (!status) return;
+  status.classList.remove("is-error");
   if (!state.feedItems.length || !state.feedPool.length) {
     status.textContent = t("feed.defaultStatus");
     return;
@@ -633,6 +1247,7 @@ async function refreshFrontiers() {
   state.isRefreshing = true;
   button.disabled = true;
   updateRefreshButton();
+  status.classList.remove("is-error");
   status.textContent = t("feed.loadingStatus");
 
   try {
@@ -654,6 +1269,7 @@ async function refreshFrontiers() {
     state.feedItems = [];
     appendFeedBatch();
     renderFeed(state.feedItems);
+    status.classList.add("is-error");
     status.textContent = t("feed.errorStatus");
   } finally {
     button.disabled = false;
@@ -719,7 +1335,7 @@ function appendFeedBatch() {
 }
 
 function feedItemMatchesCurrentView(item) {
-  const matchesKind = state.feedFilter === "all" ||
+  const matchesKind = Boolean(state.query) || state.feedFilter === "all" ||
     (state.feedFilter === "paper" && item.kind === "paper") ||
     (state.feedFilter === "lab" && item.kind !== "paper");
   if (!matchesKind) return false;
@@ -1060,16 +1676,71 @@ function toAbsoluteUrl(value, baseUrl) {
 }
 
 async function fetchText(url) {
+  const cached = readFetchCache(url);
+  if (cached !== null) return cached;
+
+  // 先尝试直连。
   try {
     const direct = await fetchWithTimeout(url, { headers: { Accept: "application/rss+xml, application/xml, text/html" } });
-    if (direct.ok) return direct.text();
+    if (direct.ok) {
+      const text = await direct.text();
+      writeFetchCache(url, text);
+      return text;
+    }
   } catch (error) {
-    // Fall through to proxy.
+    // 直连失败（多为 CORS），逐个尝试代理。
   }
 
-  const proxied = await fetchWithTimeout(`https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`);
-  if (!proxied.ok) throw new Error(`Proxy failed ${url}`);
-  return proxied.text();
+  // 依次尝试各代理，任一成功即缓存并返回。
+  for (const buildProxyUrl of CORS_PROXIES) {
+    try {
+      const proxied = await fetchWithTimeout(buildProxyUrl(url));
+      if (!proxied.ok) continue;
+      const text = await proxied.text();
+      if (!text) continue;
+      writeFetchCache(url, text);
+      return text;
+    } catch (error) {
+      // 换下一个代理。
+    }
+  }
+
+  throw new Error(`All proxies failed ${url}`);
+}
+
+function readFetchCache(url) {
+  try {
+    const raw = localStorage.getItem(FETCH_CACHE_PREFIX + url);
+    if (!raw) return null;
+    const entry = JSON.parse(raw);
+    if (!entry || (Date.now() - entry.t) > FETCH_CACHE_TTL_MS) {
+      localStorage.removeItem(FETCH_CACHE_PREFIX + url);
+      return null;
+    }
+    return entry.v;
+  } catch (error) {
+    return null;
+  }
+}
+
+function writeFetchCache(url, text) {
+  try {
+    localStorage.setItem(FETCH_CACHE_PREFIX + url, JSON.stringify({ t: Date.now(), v: text }));
+  } catch (error) {
+    // 配额超限等：清掉自己的旧缓存后放弃本次写入。
+    pruneFetchCache();
+  }
+}
+
+function pruneFetchCache() {
+  try {
+    for (let i = localStorage.length - 1; i >= 0; i--) {
+      const key = localStorage.key(i);
+      if (key && key.startsWith(FETCH_CACHE_PREFIX)) localStorage.removeItem(key);
+    }
+  } catch (error) {
+    // 忽略。
+  }
 }
 
 async function fetchWithTimeout(url, options = {}, timeout = FETCH_TIMEOUT_MS) {
@@ -1172,6 +1843,85 @@ function findSourceById(id) {
 
 function sourceTypeLabel(type) {
   return t(`labels.${type}`);
+}
+
+function sourceLogoImage(source) {
+  const candidates = sourceLogoCandidates(source);
+  if (!candidates.length) return "";
+  return `<img src="${escapeHtml(candidates[0])}" data-logo-index="0" data-logo-candidates="${escapeHtml(JSON.stringify(candidates))}" alt="" loading="lazy" decoding="async" referrerpolicy="no-referrer">`;
+}
+
+function activateSourceLogos(container = document) {
+  container.querySelectorAll(".source-logo img").forEach((img) => {
+    img.addEventListener("error", () => loadNextSourceLogo(img));
+    if (img.complete && img.naturalWidth === 0) loadNextSourceLogo(img);
+  });
+}
+
+function loadNextSourceLogo(img) {
+  const candidates = parseLogoCandidates(img.dataset.logoCandidates);
+  const nextIndex = Number(img.dataset.logoIndex || 0) + 1;
+
+  if (nextIndex < candidates.length) {
+    img.dataset.logoIndex = String(nextIndex);
+    img.src = candidates[nextIndex];
+    return;
+  }
+
+  img.parentElement?.classList.add("source-logo--fallback");
+  img.remove();
+}
+
+function parseLogoCandidates(value) {
+  try {
+    const candidates = JSON.parse(value || "[]");
+    return Array.isArray(candidates) ? candidates : [];
+  } catch (error) {
+    return [];
+  }
+}
+
+function sourceLogoCandidates(source) {
+  const override = SOURCE_LOGO_OVERRIDES[source.id] || {};
+  const baseDomain = source.logoDomain || urlDomain(source.url);
+  const domains = [
+    ...(override.domains || []),
+    baseDomain
+  ].filter(Boolean);
+
+  const urls = [
+    ...(override.urls || []),
+    ...domains.flatMap(logoServiceUrls)
+  ];
+  return [...new Set(urls)];
+}
+
+function logoServiceUrls(domain) {
+  const cleanDomain = domain.replace(/^www\./, "");
+  return [
+    `https://icons.duckduckgo.com/ip3/${encodeURIComponent(domain)}.ico`,
+    `https://www.google.com/s2/favicons?domain=${encodeURIComponent(domain)}&sz=64`,
+    `https://${domain}/favicon.ico`,
+    ...(cleanDomain !== domain ? [] : [`https://www.${domain}/favicon.ico`])
+  ];
+}
+
+function urlDomain(value) {
+  try {
+    return new URL(value).hostname.replace(/^www\./, "");
+  } catch (error) {
+    return "";
+  }
+}
+
+function sourceLogoInitials(name) {
+  const words = cleanTitle(name).split(/\s+/).filter(Boolean);
+  const initials = words
+    .map((word) => word[0])
+    .join("")
+    .replace(/[^\p{L}\p{N}]/gu, "")
+    .slice(0, 2);
+  return initials.toUpperCase() || "UR";
 }
 
 function feedKindLabel(kind) {

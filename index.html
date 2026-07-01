@@ -3,12 +3,29 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta http-equiv="cache-control" content="no-cache">
     <title>SCL城市研究所</title>
     <meta
       name="description"
       content="用于快速查阅全球城市研究实验室、研究机构与城市研究期刊最新动态的前沿资讯导航站。"
     >
-    <link rel="stylesheet" href="styles.css">
+    <meta name="theme-color" content="#0f766e">
+    <link
+      rel="icon"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Crect width='40' height='40' rx='8' fill='%230f766e'/%3E%3Ctext x='20' y='27' font-family='Inter,system-ui,sans-serif' font-size='15' font-weight='800' fill='%23fff' text-anchor='middle'%3ESCL%3C/text%3E%3C/svg%3E"
+    >
+
+    <!-- 社交分享卡片 -->
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="SCL城市研究所资源库">
+    <meta property="og:description" content="追踪全球城市研究机构、实验室与期刊的最新动态，集中呈现研究进展、论文发布与官方资讯入口。">
+    <meta property="og:locale" content="zh_CN">
+    <meta property="og:locale:alternate" content="en_US">
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="SCL城市研究所资源库">
+    <meta name="twitter:description" content="追踪全球城市研究机构、实验室与期刊的最新动态。">
+
+    <link rel="stylesheet" href="styles.css?v=20260701-cards">
   </head>
   <body>
     <header class="site-header">
@@ -23,7 +40,10 @@
         <nav class="top-nav" aria-label="主导航">
           <a href="#home" data-i18n="nav.home">首页</a>
           <a href="#library" data-i18n="nav.library">资源库</a>
-          <a href="#materials" data-i18n="nav.materials">资料下载</a>
+          <a href="#literature" data-i18n="nav.literature">文献检索</a>
+          <a href="#bigdata" data-i18n="nav.bigdata">多源数据</a>
+          <a href="#dataviz" data-i18n="nav.dataviz">可视化工具</a>
+          <a href="#books" data-i18n="nav.books">书籍推荐</a>
         </nav>
         <div class="language-switch" aria-label="语言切换">
           <button class="is-active" type="button" data-lang-toggle="zh">中文</button>
@@ -53,8 +73,9 @@
 
       <section class="control-band" aria-label="资讯筛选">
         <div class="search-wrap">
-          <label for="globalSearch" data-i18n="search.label">检索来源或主题</label>
-          <input id="globalSearch" type="search" placeholder="例如 MIT、城市分析、期刊、交通、空间数据" data-i18n-placeholder="search.placeholder">
+          <label for="globalSearch" data-i18n="search.label">全站检索</label>
+          <input id="globalSearch" type="search" placeholder="搜索机构、期刊、资料、资讯、主题关键词" data-i18n-placeholder="search.placeholder">
+          <div class="search-results" id="globalSearchResults" aria-live="polite" hidden></div>
         </div>
         <div class="metric-row" aria-label="来源统计">
           <div>
@@ -78,7 +99,7 @@
             <p class="eyebrow">Live Board</p>
             <h2 id="feedTitle" data-i18n="feed.title">最新资讯</h2>
           </div>
-          <div class="segmented-control" role="tablist" aria-label="资讯类型">
+          <div class="segmented-control" role="group" aria-label="资讯类型">
             <button class="is-active" type="button" data-feed-filter="all" data-i18n="filters.all">全部</button>
             <button type="button" data-feed-filter="lab" data-i18n="filters.progress">研究进展</button>
             <button type="button" data-feed-filter="paper" data-i18n="filters.papers">论文资讯</button>
@@ -96,7 +117,7 @@
             <p class="eyebrow">Source Library</p>
             <h2 id="libraryTitle" data-i18n="library.title">城市研究机构</h2>
           </div>
-          <div class="segmented-control" role="tablist" aria-label="资源类型">
+          <div class="segmented-control" role="group" aria-label="资源类型">
             <button class="is-active" type="button" data-source-filter="all" data-i18n="filters.all">全部</button>
             <button type="button" data-source-filter="lab" data-i18n="filters.labs">实验室</button>
             <button type="button" data-source-filter="institution" data-i18n="filters.institutions">机构</button>
@@ -106,16 +127,79 @@
         <div class="source-grid" id="sourceGrid"></div>
       </section>
 
-      <section class="materials-section" id="materials" aria-labelledby="materialsTitle">
+      <section class="library-section lit-section" id="literature" aria-labelledby="literatureTitle">
         <div class="section-heading">
           <div>
-            <p class="eyebrow">Research Downloads</p>
-            <h2 id="materialsTitle" data-i18n="materials.title">研究资料下载</h2>
-            <p class="section-note" data-i18n="materials.description">摘取小红书账号提到的城市研究、街道设计、城市更新与公共空间资料，后续可继续补充下载链接。</p>
+            <p class="eyebrow">Literature &amp; Search</p>
+            <h2 id="literatureTitle" data-i18n="literature.title">学术文献与检索</h2>
+            <p class="section-note" data-i18n="literature.note">面向城市研究的文献检索入口：综合搜索、引文索引、开放获取、中文库与文献探索工具。标注「需订阅」的多需机构订阅或登录。</p>
           </div>
-          <a class="secondary-button section-link" href="https://www.xiaohongshu.com/user/profile/5d560a22000000000100976f" target="_blank" rel="noreferrer" data-i18n="materials.sourceLink">查看小红书来源</a>
+          <div class="segmented-control" role="group" aria-label="文献类型">
+            <button class="is-active" type="button" data-lit-filter="all" data-i18n="litCat.all">全部</button>
+            <button type="button" data-lit-filter="general" data-i18n="litCat.general">综合检索</button>
+            <button type="button" data-lit-filter="index" data-i18n="litCat.index">引文索引</button>
+            <button type="button" data-lit-filter="oa" data-i18n="litCat.oa">开放获取</button>
+            <button type="button" data-lit-filter="cn" data-i18n="litCat.cn">中文文献</button>
+            <button type="button" data-lit-filter="tool" data-i18n="litCat.tool">探索工具</button>
+          </div>
         </div>
-        <div class="materials-grid" id="materialsGrid"></div>
+        <div class="source-grid resource-grid" id="literatureGrid"></div>
+      </section>
+
+      <section class="library-section data-section" id="bigdata" aria-labelledby="bigdataTitle">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">Urban Big Data</p>
+            <h2 id="bigdataTitle" data-i18n="bigdata.title">城市多源大数据</h2>
+            <p class="section-note" data-i18n="bigdata.note">面向城市研究的多源数据入口：政府开放数据、地理与遥感、时空人口、地图API与专题数据，均链接至官方下载或接口。</p>
+          </div>
+          <div class="segmented-control" role="group" aria-label="数据类型">
+            <button class="is-active" type="button" data-data-filter="all" data-i18n="dataCat.all">全部</button>
+            <button type="button" data-data-filter="gov" data-i18n="dataCat.gov">政府开放</button>
+            <button type="button" data-data-filter="geo" data-i18n="dataCat.geo">地理遥感</button>
+            <button type="button" data-data-filter="mobility" data-i18n="dataCat.mobility">时空人口</button>
+            <button type="button" data-data-filter="api" data-i18n="dataCat.api">地图API</button>
+            <button type="button" data-data-filter="thematic" data-i18n="dataCat.thematic">专题数据</button>
+          </div>
+        </div>
+        <div class="source-grid resource-grid" id="bigdataGrid"></div>
+      </section>
+
+      <section class="library-section viz-section" id="dataviz" aria-labelledby="datavizTitle">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">Visualization Tools</p>
+            <h2 id="datavizTitle" data-i18n="dataviz.title">数据可视化工具</h2>
+            <p class="section-note" data-i18n="dataviz.note">用于把城市数据转化为图表与地图的工具：图表与BI、地理可视化、编程库、词云文本与统计分析。</p>
+          </div>
+          <div class="segmented-control" role="group" aria-label="工具类型">
+            <button class="is-active" type="button" data-viz-filter="all" data-i18n="vizCat.all">全部</button>
+            <button type="button" data-viz-filter="chart" data-i18n="vizCat.chart">图表与BI</button>
+            <button type="button" data-viz-filter="geo" data-i18n="vizCat.geo">地理可视化</button>
+            <button type="button" data-viz-filter="code" data-i18n="vizCat.code">编程库</button>
+            <button type="button" data-viz-filter="text" data-i18n="vizCat.text">词云文本</button>
+            <button type="button" data-viz-filter="stat" data-i18n="vizCat.stat">统计分析</button>
+          </div>
+        </div>
+        <div class="source-grid resource-grid" id="datavizGrid"></div>
+      </section>
+
+      <section class="library-section book-section" id="books" aria-labelledby="booksTitle">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">Reading List</p>
+            <h2 id="booksTitle" data-i18n="books.title">城市研究经典书籍</h2>
+            <p class="section-note" data-i18n="books.note">精选城市研究、城市设计与规划领域的经典著作，涵盖公共生活、城市理论、城市形态与城市设计。</p>
+          </div>
+          <div class="segmented-control" role="group" aria-label="书籍类型">
+            <button class="is-active" type="button" data-book-filter="all" data-i18n="bookCat.all">全部</button>
+            <button type="button" data-book-filter="public" data-i18n="bookCat.public">公共生活</button>
+            <button type="button" data-book-filter="theory" data-i18n="bookCat.theory">城市理论</button>
+            <button type="button" data-book-filter="form" data-i18n="bookCat.form">城市形态</button>
+            <button type="button" data-book-filter="design" data-i18n="bookCat.design">城市设计</button>
+          </div>
+        </div>
+        <div class="source-grid resource-grid" id="booksGrid"></div>
       </section>
 
     </main>
@@ -123,7 +207,7 @@
     <footer class="site-footer" aria-label="页脚信息">
       <div class="footer-main">
         <strong data-i18n="footer.title">SCL城市研究所</strong>
-        <span data-i18n="footer.source">数据来源：favorites_2026_6_27.html 相关收藏夹与本次全球城市研究来源检索。</span>
+        <span data-i18n="footer.source">数据来源：城市研究相关收藏夹与本次全球城市研究来源检索。</span>
       </div>
       <div class="footer-meta" aria-label="资源概览">
         <span data-i18n="footer.scope">全球城市研究实验室、机构与期刊导航</span>
@@ -135,7 +219,7 @@
       </nav>
     </footer>
 
-    <script src="data.js"></script>
-    <script src="app.js"></script>
+    <script src="data.js?v=20260701-cards"></script>
+    <script src="app.js?v=20260701-cards"></script>
   </body>
 </html>

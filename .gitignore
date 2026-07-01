@@ -2,3 +2,9 @@
 node_modules/
 .env
 .env.*
+
+# 个人收藏夹导出，含隐私数据，不纳入仓库/部署
+favorites_*.html
+
+# Claude Code 本地配置，不纳入仓库
+.claude/
