@@ -6,5 +6,5 @@
    这两项都是公开凭证（受 RLS 保护），可以放前端 / 提交到 git。
    ⚠️ 千万不要把 service_role key 或数据库密码放到这里。
    ============================================================ */
-window.SUPABASE_URL = "https://你的项目ID.supabase.co";
-window.SUPABASE_ANON_KEY = "eyJ...把你的 anon public key 粘到这里...";
+window.SUPABASE_URL = "https://qkrtejxdzhpaecalatyb.supabase.co";
+window.SUPABASE_ANON_KEY = "sb_publishable_U15Akzv8wP55PkYrHRhiAA_-GuwsG_z";
