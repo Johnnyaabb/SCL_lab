@@ -186,6 +186,7 @@ const SOURCES = [
     region: "美国/全球",
     url: "https://nacto.org/publication/transit-street-design-guide/",
     latestUrl: "https://nacto.org/publications/",
+    feed: "https://nacto.org/feed/",
     folder: "城市研究机构",
     tags: ["街道设计", "交通", "公共空间"],
     description: "城市交通官员协会，发布街道设计、公交街道和城市交通指南。",
@@ -402,6 +403,7 @@ const SOURCES = [
     region: "南非/非洲",
     url: "https://www.africancentreforcities.net/",
     latestUrl: "https://www.africancentreforcities.net/research/",
+    feed: "https://www.africancentreforcities.net/feed/",
     folder: "全球城市研究机构",
     tags: ["非洲城市", "全球南方", "可持续城市"],
     description: "开普敦大学非洲城市中心，开展全球南方视角下的应用城市研究、教学和公共传播。",
@@ -438,6 +440,7 @@ const SOURCES = [
     region: "巴西",
     url: "https://www.observatoriodasmetropoles.net.br/",
     latestUrl: "https://www.observatoriodasmetropoles.net.br/noticias/",
+    feed: "https://www.observatoriodasmetropoles.net.br/feed/",
     folder: "全球城市研究机构",
     tags: ["都市圈", "城市不平等", "巴西城市"],
     description: "巴西都市圈观测研究网络，覆盖大都市治理、社会空间不平等和城市公共政策。",
@@ -591,6 +594,7 @@ const SOURCES = [
     region: "全球",
     url: "https://scenariojournal.com/strategies/",
     latestUrl: "https://scenariojournal.com/",
+    feed: "https://scenariojournal.com/feed/",
     folder: "城市研究期刊",
     tags: ["景观城市主义", "设计研究", "期刊"],
     description: "景观、生态与城市主义设计研究期刊。",
@@ -1435,6 +1439,116 @@ const DATAVIZ_TOOLS = [
     tags: ["图表词典", "数据可视化", "设计参考"],
     description: "中文图表类型词典，系统梳理各类图表的定义、适用场景与示例，便于选型。",
     descriptionEn: "A Chinese dictionary of chart types cataloging definitions, use cases, and examples to aid chart selection."
+  },
+  {
+    id: "mapbox-isochrone",
+    name: "Mapbox Isochrone Playground",
+    category: "analysis",
+    origin: "全球",
+    url: "https://docs.mapbox.com/playground/isochrone/",
+    tags: ["等时圈", "可达性", "15分钟城市"],
+    description: "Mapbox 官方等时圈演练场，输入位置与时间即可生成步行/骑行/驾车可达范围，是做 15 分钟城市与可达性分析的直接入口。",
+    descriptionEn: "Mapbox's official isochrone playground generates walk/bike/drive reachability from a point and time budget — a direct entry to 15-minute-city and accessibility analysis."
+  },
+  {
+    id: "smappen",
+    name: "smappen",
+    category: "analysis",
+    origin: "全球",
+    url: "https://www.smappen.com/",
+    tags: ["等时圈", "可达性", "场地分析"],
+    description: "在线等时圈与商圈分析工具，快速绘制出行时间范围并叠加人口、POI 等数据，常用于选址与 15 分钟生活圈分析。",
+    descriptionEn: "An online isochrone and catchment tool that draws travel-time areas and overlays population and POI data for site selection and 15-minute-city analysis."
+  },
+  {
+    id: "traveltime",
+    name: "TravelTime",
+    category: "analysis",
+    origin: "全球",
+    url: "https://traveltime.com/",
+    tags: ["等时圈", "可达性", "出行"],
+    description: "以出行时间为核心的可达性分析平台与 API，支持多模式等时圈、通勤与选址分析。",
+    descriptionEn: "A travel-time-centric accessibility platform and API supporting multimodal isochrones, commuting, and location analysis."
+  },
+  {
+    id: "carto-analysis",
+    name: "CARTO",
+    category: "analysis",
+    origin: "全球",
+    url: "https://carto.com/",
+    tags: ["地理空间分析", "云平台", "可视化"],
+    description: "云原生地理空间分析平台，支持空间 SQL、区位分析与大规模地理数据的建模与可视化。",
+    descriptionEn: "A cloud-native geospatial analysis platform with spatial SQL, location analysis, and large-scale geodata modeling and visualization."
+  },
+  {
+    id: "urbanfootprint",
+    name: "UrbanFootprint",
+    category: "analysis",
+    origin: "美国",
+    url: "https://urbanfootprint.com/",
+    tags: ["规划分析", "情景模拟", "土地利用"],
+    description: "面向规划的城市分析平台，整合土地利用、交通与环境数据，支持情景构建与影响评估。",
+    descriptionEn: "A planning-oriented urban analytics platform integrating land use, transport, and environmental data for scenario building and impact assessment."
+  },
+  {
+    id: "conveyal",
+    name: "Conveyal",
+    category: "analysis",
+    origin: "美国",
+    url: "https://conveyal.com/",
+    tags: ["公交可达", "情景模拟", "交通"],
+    description: "公共交通可达性分析工具，基于 GTFS 与路网评估不同交通方案下的出行可达性，支持情景对比。",
+    descriptionEn: "A transit accessibility tool using GTFS and street networks to evaluate reachability under different transport scenarios."
+  },
+  {
+    id: "arcgis-urban",
+    name: "ArcGIS Urban",
+    category: "analysis",
+    origin: "全球",
+    url: "https://www.esri.com/en-us/arcgis/products/arcgis-urban/overview",
+    tags: ["三维规划", "城市设计", "情景模拟"],
+    description: "Esri 的三维城市规划与设计平台，支持地块开发、分区与城市设计方案的情景模拟与评估。",
+    descriptionEn: "Esri's 3D city planning and design platform for parcel development, zoning, and scenario simulation of urban design proposals."
+  },
+  {
+    id: "social-explorer-tool",
+    name: "Social Explorer",
+    category: "analysis",
+    origin: "美国",
+    url: "https://www.socialexplorer.com/",
+    tags: ["社会分析", "人口数据", "地图"],
+    description: "人口与社会经济数据的交互分析与制图平台，可快速生成人口统计地图与专题分析。",
+    descriptionEn: "An interactive platform for demographic and socioeconomic data, producing population maps and thematic analysis quickly."
+  },
+  {
+    id: "digital-blue-foam",
+    name: "Digital Blue Foam",
+    category: "analysis",
+    origin: "全球",
+    url: "https://www.digitalbluefoam.com/",
+    tags: ["生成式设计", "AI分析", "场地分析"],
+    description: "AI 驱动的生成式城市设计与场地分析工具，快速生成并评估城市与建筑方案的多种可能。",
+    descriptionEn: "An AI-driven generative urban design and site-analysis tool that rapidly generates and evaluates city and building options."
+  },
+  {
+    id: "uatp",
+    name: "Urban Analytics Technology Platform",
+    category: "analysis",
+    origin: "全球",
+    url: "https://urban-analytics-technology-platform.github.io/",
+    tags: ["开源", "城市分析", "空间分析"],
+    description: "开源城市分析技术平台，汇集可复用的城市数据分析与建模工具，面向研究与规划实践。",
+    descriptionEn: "An open-source urban analytics technology platform gathering reusable tools for urban data analysis and modeling."
+  },
+  {
+    id: "replica",
+    name: "Replica",
+    category: "analysis",
+    origin: "美国",
+    url: "https://www.replicahq.com/",
+    tags: ["活动数据", "出行", "城市模拟"],
+    description: "以合成活动数据重建城市出行与人口活动的平台，为交通与土地利用决策提供分析支持。",
+    descriptionEn: "A platform reconstructing urban travel and population activity with synthetic activity data to support transport and land-use decisions."
   }
 ];
 
@@ -1821,6 +1935,374 @@ const BOOKS = [
     tags: ["步行城市", "街道设计", "可持续"],
     description: "提出“步行性通用理论”，从安全、有趣、舒适、有用四方面推动城市重回步行尺度。",
     descriptionEn: "Presents a 'general theory of walkability', arguing walks must be safe, interesting, comfortable, and useful."
+  },
+  {
+    id: "great-good-place",
+    title: "第三空间",
+    titleEn: "The Great Good Place",
+    author: "雷·奥登伯格 Ray Oldenburg",
+    year: 1989,
+    category: "public",
+    tags: ["公共生活", "第三空间", "社区"],
+    description: "提出咖啡馆、酒吧等“第三空间”对社区交往与公共生活的关键价值，影响深远。",
+    descriptionEn: "Argues for the vital role of cafés, pubs, and other 'third places' in community and public life."
+  },
+  {
+    id: "happy-city",
+    title: "幸福城市",
+    titleEn: "Happy City",
+    author: "查尔斯·蒙哥马利 Charles Montgomery",
+    year: 2013,
+    category: "public",
+    tags: ["公共生活", "公共健康", "城市设计"],
+    description: "结合心理学与城市设计，论证城市形态如何深刻影响居民的幸福感与社会联系。",
+    descriptionEn: "Blends psychology and urban design to show how city form shapes residents' happiness and social connection."
+  },
+  {
+    id: "social-justice-city",
+    title: "社会正义与城市",
+    titleEn: "Social Justice and the City",
+    author: "大卫·哈维 David Harvey",
+    year: 1973,
+    category: "theory",
+    tags: ["城市理论", "批判地理", "社会公正"],
+    description: "批判城市地理学的奠基之作，从空间与资本视角剖析城市不平等的生成机制。",
+    descriptionEn: "A founding text of critical urban geography, analyzing how urban inequality is produced through space and capital."
+  },
+  {
+    id: "economy-of-cities",
+    title: "城市经济",
+    titleEn: "The Economy of Cities",
+    author: "简·雅各布斯 Jane Jacobs",
+    year: 1969,
+    category: "theory",
+    tags: ["城市经济", "城市理论", "集聚"],
+    description: "提出城市而非乡村才是经济增长与创新的引擎，重塑了对城市经济作用的认识。",
+    descriptionEn: "Argues that cities, not the countryside, are the engines of economic growth and innovation."
+  },
+  {
+    id: "architecture-of-city",
+    title: "城市建筑学",
+    titleEn: "The Architecture of the City",
+    author: "阿尔多·罗西 Aldo Rossi",
+    year: 1966,
+    category: "form",
+    tags: ["城市形态", "类型学", "集体记忆"],
+    description: "以类型学与集体记忆解读城市，主张城市是随时间累积的建筑与记忆的产物。",
+    descriptionEn: "Reads the city through typology and collective memory, framing it as an artifact built up over time."
+  },
+  {
+    id: "concise-townscape",
+    title: "城镇景观",
+    titleEn: "The Concise Townscape",
+    author: "戈登·卡伦 Gordon Cullen",
+    year: 1961,
+    category: "form",
+    tags: ["城市形态", "序列视景", "城市设计"],
+    description: "以“序列视景”方法图解人在城镇中行进的空间体验，奠定城镇景观设计传统。",
+    descriptionEn: "Uses 'serial vision' to illustrate the experience of moving through towns, founding the townscape tradition."
+  },
+  {
+    id: "delirious-new-york",
+    title: "癫狂的纽约",
+    titleEn: "Delirious New York",
+    author: "雷姆·库哈斯 Rem Koolhaas",
+    year: 1978,
+    category: "form",
+    tags: ["城市形态", "建筑理论", "城市文化"],
+    description: "对曼哈顿“拥挤文化”的回溯性宣言，揭示高密度大都会独特的建筑与城市逻辑。",
+    descriptionEn: "A retroactive manifesto for Manhattan's 'culture of congestion', revealing the logic of the dense metropolis."
+  },
+  {
+    id: "design-of-cities",
+    title: "城市设计",
+    titleEn: "Design of Cities",
+    author: "埃德蒙·N·培根 Edmund N. Bacon",
+    year: 1967,
+    category: "design",
+    tags: ["城市设计", "城市空间", "历史案例"],
+    description: "借助雅典、罗马、巴黎等历史名城案例，系统讲述城市空间的塑造与设计原理。",
+    descriptionEn: "Teaches the shaping of urban space through historic cases such as Athens, Rome, and Paris."
+  },
+  {
+    id: "exterior-design",
+    title: "外部空间设计",
+    titleEn: "Exterior Design in Architecture",
+    author: "芦原义信 Yoshinobu Ashihara",
+    year: 1975,
+    category: "design",
+    tags: ["城市设计", "外部空间", "空间尺度"],
+    description: "系统探讨建筑之间外部空间的构成、尺度与围合，是外部空间设计的经典理论。",
+    descriptionEn: "A classic on the composition, scale, and enclosure of exterior space between buildings."
+  }
+];
+
+// 海外城市分析院校申请名单：可申请的院校/实验室，含主导老师与研究方向、申请入口。
+// category: apac 亚太 | na 北美 | eu 欧洲
+const OVERSEAS_PROGRAMS = [
+  {
+    id: "hku-urban-analytics",
+    school: "香港大学 HKU",
+    lab: "城市研究及城市规划中心 CUSUP · 城市分析硕士",
+    region: "中国香港",
+    category: "apac",
+    pi: "叶嘉安 Anthony G.O. Yeh 等",
+    url: "https://www.arch.hku.hk/programmes/upad/master-of-science-in-urban-analytics/",
+    tags: ["城市分析", "城市数据科学", "GIS"],
+    description: "建筑学院城市规划与设计系开设城市分析硕士(MSc Urban Analytics)，依托城市研究及城市规划中心(CUSUP)，方向涵盖城市大数据、GIS 与智慧城市。",
+    descriptionEn: "HKU's MSc in Urban Analytics under the Dept of Urban Planning and Design and the CUSUP centre, covering urban big data, GIS, and smart cities."
+  },
+  {
+    id: "nus-ual",
+    school: "新加坡国立大学 NUS",
+    lab: "Urban Analytics Lab",
+    region: "新加坡",
+    category: "apac",
+    pi: "Filip Biljecki",
+    url: "https://ual.sg/",
+    tags: ["城市分析", "地理数据科学", "3D城市模型"],
+    description: "设计与工程学院建筑系的城市分析实验室，聚焦城市分析、地理空间数据科学与三维城市模型，长期招收博士、研究助理与博士后。",
+    descriptionEn: "NUS Architecture's Urban Analytics Lab focused on urban analytics, geospatial data science, and 3D city models; recruits PhDs, RAs, and postdocs."
+  },
+  {
+    id: "polyu-scri-apply",
+    school: "香港理工大学 PolyU",
+    lab: "Smart Cities Research Institute 智慧城市研究院",
+    region: "中国香港",
+    category: "apac",
+    pi: "研究院多课题组",
+    url: "https://www.polyu.edu.hk/scri/",
+    tags: ["智慧城市", "城市信息学", "遥感"],
+    description: "港理工智慧城市研究院，整合空间信息、城市信息学与智慧城市技术，提供跨学科博士研究机会。",
+    descriptionEn: "PolyU's Smart Cities Research Institute integrating geoinformation, urban informatics, and smart-city tech, with interdisciplinary PhD opportunities."
+  },
+  {
+    id: "utokyo-csis",
+    school: "东京大学 UTokyo",
+    lab: "空间信息科学中心 CSIS",
+    region: "日本",
+    category: "apac",
+    pi: "CSIS 课题组",
+    url: "https://www.csis.u-tokyo.ac.jp/en/",
+    tags: ["空间数据科学", "GIS", "城市分析"],
+    description: "东京大学空间信息科学中心(CSIS)，以空间数据分析、GIS 与城市信息研究见长，提供研究生研究平台。",
+    descriptionEn: "The University of Tokyo's Center for Spatial Information Science (CSIS), strong in spatial data analysis, GIS, and urban information research."
+  },
+  {
+    id: "mit-senseable-apply",
+    school: "麻省理工学院 MIT",
+    lab: "Senseable City Lab",
+    region: "美国",
+    category: "na",
+    pi: "Carlo Ratti",
+    url: "https://senseable.mit.edu/",
+    tags: ["城市感知", "城市大数据", "城市科学"],
+    description: "MIT 可感知城市实验室，用实时数据与传感研究城市活动、移动性与环境，隶属城市研究与规划系(DUSP)。",
+    descriptionEn: "MIT's Senseable City Lab studies urban activity, mobility, and environment with real-time sensing; affiliated with DUSP."
+  },
+  {
+    id: "mit-city-science-apply",
+    school: "麻省理工学院 MIT",
+    lab: "City Science（Media Lab）",
+    region: "美国",
+    category: "na",
+    pi: "Kent Larson",
+    url: "https://www.media.mit.edu/groups/city-science/",
+    tags: ["城市模型", "城市科学", "出行"],
+    description: "MIT 媒体实验室城市科学组，研究城市建模仿真、生活实验室与新型移动性，并在全球设有 City Science Lab 网络。",
+    descriptionEn: "MIT Media Lab's City Science group on urban modeling, living labs, and new mobility, with a global network of City Science Labs."
+  },
+  {
+    id: "nyu-cusp-apply",
+    school: "纽约大学 NYU",
+    lab: "Center for Urban Science + Progress (CUSP)",
+    region: "美国",
+    category: "na",
+    pi: "应用城市科学硕士项目",
+    url: "https://cusp.nyu.edu/",
+    tags: ["城市信息学", "城市科学", "数据分析"],
+    description: "纽约大学城市科学与进步中心，开设应用城市科学与信息学硕士(MS Applied Urban Science and Informatics)，强调数据驱动的城市问题解决。",
+    descriptionEn: "NYU's CUSP offers the MS in Applied Urban Science and Informatics, emphasizing data-driven solutions to urban problems."
+  },
+  {
+    id: "uchicago-mansueto-apply",
+    school: "芝加哥大学 UChicago",
+    lab: "Mansueto Institute for Urban Innovation",
+    region: "美国",
+    category: "na",
+    pi: "Luís Bettencourt",
+    url: "https://miurban.uchicago.edu/",
+    tags: ["城市科学", "城市理论", "复杂系统"],
+    description: "芝加哥大学曼苏埃托城市创新研究所，从城市科学与复杂系统视角研究城市增长、形态与不平等。",
+    descriptionEn: "UChicago's Mansueto Institute studies urban growth, form, and inequality through urban science and complex-systems lenses."
+  },
+  {
+    id: "utoronto-school-of-cities-apply",
+    school: "多伦多大学 UofT",
+    lab: "School of Cities",
+    region: "加拿大",
+    category: "na",
+    pi: "跨学科研究项目",
+    url: "https://schoolofcities.utoronto.ca/",
+    tags: ["城市研究", "城市数据", "跨学科"],
+    description: "多伦多大学城市学院，汇聚跨学科力量研究城市议题，提供城市相关研究生项目与研究机会。",
+    descriptionEn: "The University of Toronto's School of Cities convenes interdisciplinary urban research and graduate opportunities."
+  },
+  {
+    id: "ucl-casa-apply",
+    school: "伦敦大学学院 UCL",
+    lab: "CASA 先进空间分析中心",
+    region: "英国",
+    category: "eu",
+    pi: "Michael Batty 等",
+    url: "https://www.ucl.ac.uk/bartlett/casa/",
+    tags: ["空间数据科学", "智慧城市", "城市模型"],
+    description: "UCL 巴特莱特先进空间分析中心(CASA)，开设城市空间科学硕士(原智慧城市与城市分析)，方向涵盖大数据、城市建模与可视化。",
+    descriptionEn: "UCL Bartlett's CASA offers the MSc Urban Spatial Science (formerly Smart Cities & Urban Analytics), spanning big data, modeling, and visualization."
+  },
+  {
+    id: "ethz-fcl-apply",
+    school: "苏黎世联邦理工 ETH · 新加坡-ETH中心",
+    lab: "Future Cities Lab Global",
+    region: "瑞士/新加坡",
+    category: "eu",
+    pi: "FCL Global 课题组",
+    url: "https://fcl.ethz.ch/",
+    tags: ["未来城市", "可持续城市", "城市模拟"],
+    description: "新加坡-ETH 中心未来城市实验室，跨学科研究高密度城市的可持续设计与仿真，提供博士与博士后研究机会。",
+    descriptionEn: "The Singapore-ETH Future Cities Lab researches sustainable design and simulation of dense cities, with PhD and postdoc positions."
+  },
+  {
+    id: "tudelft-uds-apply",
+    school: "代尔夫特理工 TU Delft",
+    lab: "Urban Data Science · 城市学系",
+    region: "荷兰",
+    category: "eu",
+    pi: "城市学系课题组",
+    url: "https://www.tudelft.nl/en/architecture-and-the-built-environment/about-the-faculty/departments/urbanism/organisation/sections/urban-data-science/",
+    tags: ["城市数据科学", "GIS", "城市形态"],
+    description: "代尔夫特理工建筑与建成环境学院城市学系，设城市数据科学方向，研究城市形态、地理数据与建成环境分析。",
+    descriptionEn: "TU Delft Urbanism's Urban Data Science section studies urban form, geodata, and built-environment analysis."
+  },
+  {
+    id: "glasgow-ubdc-apply",
+    school: "格拉斯哥大学 Glasgow",
+    lab: "Urban Big Data Centre (UBDC)",
+    region: "英国",
+    category: "eu",
+    pi: "UBDC 研究中心",
+    url: "https://www.ubdc.ac.uk/",
+    tags: ["城市大数据", "数据服务", "城市政策"],
+    description: "格拉斯哥大学城市大数据中心，提供城市大数据资源与研究，支持数据驱动的城市政策与社会研究博士项目。",
+    descriptionEn: "The University of Glasgow's Urban Big Data Centre offers urban big-data resources and PhD research in data-driven urban policy."
+  },
+  {
+    id: "tsinghua-bcl",
+    school: "清华大学 Tsinghua",
+    lab: "北京城市实验室 Beijing City Lab",
+    region: "中国",
+    category: "apac",
+    pi: "龙瀛 Ying Long",
+    url: "https://www.beijingcitylab.com/",
+    tags: ["城市科学", "城市大数据", "城市模型"],
+    description: "清华大学建筑学院龙瀛团队发起的北京城市实验室(BCL)，以量化方法与城市大数据研究城市动态、城市模拟与未来城市。",
+    descriptionEn: "Beijing City Lab, founded by Ying Long at Tsinghua's School of Architecture, uses quantitative methods and urban big data to study urban dynamics, simulation, and future cities."
+  },
+  {
+    id: "tongji-caup",
+    school: "同济大学 Tongji",
+    lab: "建筑与城市规划学院 CAUP",
+    region: "中国",
+    category: "apac",
+    pi: "学院多课题组",
+    url: "https://caup.tongji.edu.cn/",
+    tags: ["城市规划", "城市设计", "城市更新"],
+    description: "同济大学建筑与城市规划学院，中国城市规划与设计重镇，研究涵盖城市更新、区域规划与数字化城市设计。",
+    descriptionEn: "Tongji's College of Architecture and Urban Planning (CAUP), a leading Chinese school for urban planning and design, spanning renewal, regional planning, and digital urban design."
+  },
+  {
+    id: "cuhk-iofc",
+    school: "香港中文大学 CUHK",
+    lab: "未来城市研究所 Institute of Future Cities",
+    region: "中国香港",
+    category: "apac",
+    pi: "研究所课题组",
+    url: "https://www.iofc.cuhk.edu.hk/",
+    tags: ["未来城市", "城市大数据", "跨学科"],
+    description: "香港中文大学未来城市研究所，以跨学科方法研究可持续与智慧的未来城市，涵盖城市大数据与社会空间分析。",
+    descriptionEn: "CUHK's Institute of Future Cities pursues interdisciplinary research on sustainable, smart future cities, including urban big data and socio-spatial analysis."
+  },
+  {
+    id: "unsw-city-futures",
+    school: "新南威尔士大学 UNSW",
+    lab: "City Futures Research Centre",
+    region: "澳大利亚",
+    category: "apac",
+    pi: "研究中心多课题组",
+    url: "https://cityfutures.ada.unsw.edu.au/",
+    tags: ["城市分析", "住房", "城市政策"],
+    description: "UNSW 建成环境学院城市未来研究中心，覆盖城市分析、住房、紧凑城市与城市政策，招收博士与硕士研究生。",
+    descriptionEn: "UNSW's City Futures Research Centre spans urban analytics, housing, compact cities, and urban policy, recruiting PhD and Masters researchers."
+  },
+  {
+    id: "harvard-gsd-mup",
+    school: "哈佛大学 Harvard GSD",
+    lab: "城市规划与设计系 · 城市规划硕士(MUP)",
+    region: "美国",
+    category: "na",
+    pi: "城市规划与设计系",
+    url: "https://www.gsd.harvard.edu/urban-planning-design/",
+    tags: ["城市规划", "城市设计", "城市政策"],
+    description: "哈佛设计研究生院城市规划与设计系，开设城市规划硕士(MUP)与城市设计硕士(MAUD)，关注城市与区域的重大议题。",
+    descriptionEn: "Harvard GSD's Dept of Urban Planning and Design offers the MUP and MAUD, engaging major urban and regional challenges."
+  },
+  {
+    id: "berkeley-dcrp",
+    school: "加州大学伯克利 UC Berkeley",
+    lab: "城市与区域规划系 DCRP",
+    region: "美国",
+    category: "na",
+    pi: "城市与区域规划系",
+    url: "https://ced.berkeley.edu/city",
+    tags: ["城市规划", "城市分析", "社会公正"],
+    description: "伯克利环境设计学院城市与区域规划系(DCRP)，提供城市规划硕士与博士，强调规划的社会公平与人本影响。",
+    descriptionEn: "UC Berkeley's DCRP offers the MCP and PhD in City and Regional Planning, emphasizing equity and the human impacts of planning."
+  },
+  {
+    id: "gatech-scarp",
+    school: "佐治亚理工 Georgia Tech",
+    lab: "城市与区域规划学院 SCaRP",
+    region: "美国",
+    category: "na",
+    pi: "学院课题组",
+    url: "https://planning.gatech.edu/",
+    tags: ["城市规划", "城市信息学", "交通"],
+    description: "佐治亚理工城市与区域规划学院，强项包括城市信息学、交通与土地利用、地理空间分析。",
+    descriptionEn: "Georgia Tech's School of City and Regional Planning is strong in urban informatics, transportation, and geospatial analysis."
+  },
+  {
+    id: "lse-cities-msc",
+    school: "伦敦政治经济学院 LSE",
+    lab: "LSE Cities · 城市设计与社会科学硕士",
+    region: "英国",
+    category: "eu",
+    pi: "LSE Cities 研究中心",
+    url: "https://www.lse.ac.uk/cities",
+    tags: ["城市设计", "城市社会学", "城市政策"],
+    description: "伦敦政经 LSE Cities 研究中心，开设城市设计与社会科学硕士，从社会科学视角研究城市治理与城市化。",
+    descriptionEn: "LSE Cities offers the MSc City Design and Social Science, studying urban governance and urbanization through a social-science lens."
+  },
+  {
+    id: "polimi-uppd",
+    school: "米兰理工 Politecnico di Milano",
+    lab: "城市规划与政策设计",
+    region: "意大利",
+    category: "eu",
+    pi: "城市规划项目",
+    url: "https://www.polimi.it/en",
+    tags: ["城市规划", "城市政策", "区域研究"],
+    description: "米兰理工大学城市规划与政策设计项目，聚焦城市与区域规划、政策设计与欧洲城市议题。",
+    descriptionEn: "Politecnico di Milano's Urban Planning and Policy Design program focuses on urban and regional planning, policy design, and European urban issues."
   }
 ];
 

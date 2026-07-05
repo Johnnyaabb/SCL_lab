@@ -25,7 +25,7 @@
     <meta name="twitter:title" content="SCL城市研究所资源库">
     <meta name="twitter:description" content="追踪全球城市研究机构、实验室与期刊的最新动态。">
 
-    <link rel="stylesheet" href="styles.css?v=20260701-cards">
+    <link rel="stylesheet" href="styles.css?v=20260701-toolkit">
   </head>
   <body>
     <header class="site-header">
@@ -42,8 +42,9 @@
           <a href="#library" data-i18n="nav.library">资源库</a>
           <a href="#literature" data-i18n="nav.literature">文献检索</a>
           <a href="#bigdata" data-i18n="nav.bigdata">多源数据</a>
-          <a href="#dataviz" data-i18n="nav.dataviz">可视化工具</a>
+          <a href="#dataviz" data-i18n="nav.dataviz">研究工具集</a>
           <a href="#books" data-i18n="nav.books">书籍推荐</a>
+          <a href="#programs" data-i18n="nav.programs">院校申请</a>
         </nav>
         <div class="language-switch" aria-label="语言切换">
           <button class="is-active" type="button" data-lang-toggle="zh">中文</button>
@@ -168,12 +169,13 @@
       <section class="library-section viz-section" id="dataviz" aria-labelledby="datavizTitle">
         <div class="section-heading">
           <div>
-            <p class="eyebrow">Visualization Tools</p>
-            <h2 id="datavizTitle" data-i18n="dataviz.title">数据可视化工具</h2>
-            <p class="section-note" data-i18n="dataviz.note">用于把城市数据转化为图表与地图的工具：图表与BI、地理可视化、编程库、词云文本与统计分析。</p>
+            <p class="eyebrow">Research Toolkit</p>
+            <h2 id="datavizTitle" data-i18n="dataviz.title">城市研究工具集</h2>
+            <p class="section-note" data-i18n="dataviz.note">面向城市研究的工具集：城市分析平台、图表与BI、地理可视化、编程库、词云文本与统计分析。</p>
           </div>
           <div class="segmented-control" role="group" aria-label="工具类型">
             <button class="is-active" type="button" data-viz-filter="all" data-i18n="vizCat.all">全部</button>
+            <button type="button" data-viz-filter="analysis" data-i18n="vizCat.analysis">分析工具</button>
             <button type="button" data-viz-filter="chart" data-i18n="vizCat.chart">图表与BI</button>
             <button type="button" data-viz-filter="geo" data-i18n="vizCat.geo">地理可视化</button>
             <button type="button" data-viz-filter="code" data-i18n="vizCat.code">编程库</button>
@@ -202,24 +204,61 @@
         <div class="source-grid resource-grid" id="booksGrid"></div>
       </section>
 
+      <section class="library-section program-section" id="programs" aria-labelledby="programsTitle">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">Programs Worldwide</p>
+            <h2 id="programsTitle" data-i18n="programs.title">全球城市研究院校申请</h2>
+            <p class="section-note" data-i18n="programs.note">面向城市研究、城市分析、城市科学与城市信息学方向的全球院校与实验室名单，含研究方向、主导老师与申请入口，供留学申请参考。</p>
+          </div>
+          <div class="segmented-control" role="group" aria-label="地区">
+            <button class="is-active" type="button" data-program-filter="all" data-i18n="progCat.all">全部</button>
+            <button type="button" data-program-filter="apac" data-i18n="progCat.apac">亚太</button>
+            <button type="button" data-program-filter="na" data-i18n="progCat.na">北美</button>
+            <button type="button" data-program-filter="eu" data-i18n="progCat.eu">欧洲</button>
+          </div>
+        </div>
+        <div class="source-grid resource-grid" id="programsGrid"></div>
+      </section>
+
     </main>
 
     <footer class="site-footer" aria-label="页脚信息">
-      <div class="footer-main">
-        <strong data-i18n="footer.title">SCL城市研究所</strong>
-        <span data-i18n="footer.source">数据来源：城市研究相关收藏夹与本次全球城市研究来源检索。</span>
+      <div class="footer-top">
+        <div class="footer-brand">
+          <a class="footer-logo" href="#home" aria-label="SCL城市研究所首页">
+            <span class="brand-mark">SCL</span>
+            <span>
+              <strong data-i18n="footer.title">SCL城市研究所</strong>
+              <small data-i18n="footer.tagline">城市研究资源导航</small>
+            </span>
+          </a>
+          <p class="footer-desc" data-i18n="footer.desc">汇集城市研究实验室、机构、期刊、文献、数据、工具与经典书籍的一站式导航。</p>
+        </div>
+        <nav class="footer-col" aria-label="资源导航">
+          <h4 data-i18n="footer.navTitle">资源导航</h4>
+          <a href="#library" data-i18n="nav.library">资源库</a>
+          <a href="#literature" data-i18n="nav.literature">文献检索</a>
+          <a href="#bigdata" data-i18n="nav.bigdata">多源数据</a>
+          <a href="#dataviz" data-i18n="nav.dataviz">研究工具集</a>
+          <a href="#books" data-i18n="nav.books">书籍推荐</a>
+          <a href="#programs" data-i18n="nav.programs">院校申请</a>
+        </nav>
+        <nav class="footer-col" aria-label="快速链接">
+          <h4 data-i18n="footer.quickTitle">快速链接</h4>
+          <a href="#home" data-i18n="nav.home">首页</a>
+          <a href="#feedTitle" data-i18n="feed.title">最新资讯</a>
+          <a href="#library" data-i18n="actions.browse">浏览全部来源</a>
+          <a href="#home" data-i18n="footer.backTop">回到顶部</a>
+        </nav>
       </div>
-      <div class="footer-meta" aria-label="资源概览">
-        <span data-i18n="footer.scope">全球城市研究实验室、机构与期刊导航</span>
-        <span data-i18n="footer.count">76 个来源 · 支持中英文检索</span>
+      <div class="footer-bottom">
+        <span data-i18n="footer.source">数据来源：城市研究相关收藏夹与全网检索整理。</span>
+        <span id="footerMeta"></span>
       </div>
-      <nav class="footer-links" aria-label="页脚导航">
-        <a href="#library" data-i18n="footer.library">查看资源库</a>
-        <a href="#home" data-i18n="footer.backTop">回到顶部</a>
-      </nav>
     </footer>
 
-    <script src="data.js?v=20260701-cards"></script>
-    <script src="app.js?v=20260701-cards"></script>
+    <script src="data.js?v=20260701-toolkit"></script>
+    <script src="app.js?v=20260701-toolkit"></script>
   </body>
 </html>

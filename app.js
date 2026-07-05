@@ -4,6 +4,7 @@ const state = {
   dataFilter: "all",
   vizFilter: "all",
   bookFilter: "all",
+  programFilter: "all",
   feedFilter: "all",
   query: "",
   queryRaw: "",
@@ -30,6 +31,9 @@ const CORS_PROXIES = [
 // 抓取结果缓存：同一 url 在该时间窗内复用，避免每次刷新都重新请求。
 const FETCH_CACHE_TTL_MS = 30 * 60 * 1000; // 30 分钟
 const FETCH_CACHE_PREFIX = "scl:fetch:";
+
+// 未显式配置 RSS 的来源，按常见端点自动探测（覆盖 WordPress 与 Hugo/Jekyll 静态站）。
+const GUESS_FEED_PATHS = ["/feed/", "/index.xml", "/?feed=rss2"];
 
 const SOURCE_LOGO_OVERRIDES = {
   "mit-senseable": { domains: ["mit.edu"] },
@@ -87,7 +91,7 @@ const i18n = {
       description: "用于快速查阅全球城市研究实验室、研究机构与城市研究期刊最新动态的前沿资讯导航站。"
     },
     brand: { title: "SCL城市研究所" },
-    nav: { home: "首页", library: "资源库", literature: "文献检索", bigdata: "多源数据", dataviz: "可视化工具", books: "书籍推荐" },
+    nav: { home: "首页", library: "资源库", literature: "文献检索", bigdata: "多源数据", dataviz: "研究工具集", books: "书籍推荐", programs: "院校申请" },
     hero: {
       title: "SCL城市研究所资源库",
       lede: "SCL城市研究所资源库用于追踪全球城市研究机构、实验室与期刊的最新动态，集中呈现研究进展、论文发布与官方资讯入口。",
@@ -105,7 +109,8 @@ const i18n = {
       openSource: "打开来源",
       download: "下载资料",
       open: "打开",
-      book: "图书条目"
+      book: "图书条目",
+      apply: "申请入口"
     },
     search: {
       label: "全站检索",
@@ -118,6 +123,7 @@ const i18n = {
       dataSource: "多源数据",
       vizTool: "可视化工具",
       book: "经典书籍",
+      program: "院校申请",
       news: "资讯"
     },
     metrics: { sources: "已纳入来源", journals: "期刊与出版", labs: "实验室与机构" },
@@ -159,8 +165,8 @@ const i18n = {
       empty: "没有匹配的数据源，换个关键词试试。"
     },
     dataviz: {
-      title: "数据可视化工具",
-      note: "用于把城市数据转化为图表与地图的工具：图表与BI、地理可视化、编程库、词云文本与统计分析。",
+      title: "城市研究工具集",
+      note: "面向城市研究的工具集：城市分析平台、图表与BI、地理可视化、编程库、词云文本与统计分析。",
       empty: "没有匹配的工具，换个关键词试试。"
     },
     dataCat: {
@@ -173,6 +179,7 @@ const i18n = {
     },
     vizCat: {
       all: "全部",
+      analysis: "分析工具",
       chart: "图表与BI",
       geo: "地理可视化",
       code: "编程库",
@@ -190,6 +197,18 @@ const i18n = {
       theory: "城市理论",
       form: "城市形态",
       design: "城市设计"
+    },
+    programs: {
+      title: "全球城市研究院校申请",
+      note: "面向城市研究、城市分析、城市科学与城市信息学方向的全球院校与实验室名单，含研究方向、主导老师与申请入口，供留学申请参考。",
+      empty: "没有匹配的院校，换个关键词试试。",
+      piLabel: "主导老师"
+    },
+    progCat: {
+      all: "全部",
+      apac: "亚太",
+      na: "北美",
+      eu: "欧洲"
     },
     filters: {
       all: "全部",
@@ -214,11 +233,13 @@ const i18n = {
     },
     footer: {
       title: "SCL城市研究所",
-      source: "数据来源：城市研究相关收藏夹与本次全球城市研究来源检索。",
-      scope: "全球城市研究实验室、机构与期刊导航",
-      count: "76 个来源 · 支持中英文检索",
-      library: "查看资源库",
-      backTop: "回到顶部"
+      tagline: "城市研究资源导航",
+      desc: "汇集城市研究实验室、机构、期刊、文献、数据、工具与经典书籍的一站式导航。",
+      navTitle: "资源导航",
+      quickTitle: "快速链接",
+      backTop: "回到顶部",
+      source: "数据来源：城市研究相关收藏夹与全网检索整理。",
+      meta: (n) => `共 ${n} 项资源 · 支持中英文检索`
     }
   },
   en: {
@@ -227,7 +248,7 @@ const i18n = {
       description: "A curated navigation site for global urban research labs, institutions, journals, and recent signals."
     },
     brand: { title: "SCL Urban Research Institute" },
-    nav: { home: "Home", library: "Library", literature: "Literature", bigdata: "Big Data", dataviz: "Viz Tools", books: "Books" },
+    nav: { home: "Home", library: "Library", literature: "Literature", bigdata: "Big Data", dataviz: "Toolkit", books: "Books", programs: "Programs" },
     hero: {
       title: "SCL Urban Research Institute Library",
       lede: "The SCL Urban Research Institute Library tracks updates from global urban research institutions, labs, and journals, bringing research progress, paper releases, and official source links into one place.",
@@ -245,7 +266,8 @@ const i18n = {
       openSource: "Open Source",
       download: "Download",
       open: "Open",
-      book: "Book Page"
+      book: "Book Page",
+      apply: "How to Apply"
     },
     search: {
       label: "Site Search",
@@ -258,6 +280,7 @@ const i18n = {
       dataSource: "Big Data",
       vizTool: "Viz Tool",
       book: "Book",
+      program: "Program",
       news: "News"
     },
     metrics: { sources: "included sources", journals: "journals & publishing", labs: "labs & institutions" },
@@ -299,8 +322,8 @@ const i18n = {
       empty: "No data sources match this search. Try a different keyword."
     },
     dataviz: {
-      title: "Data Visualization Tools",
-      note: "Tools to turn urban data into charts and maps: charts and BI, geovisualization, programming libraries, word clouds and text, and statistical analysis.",
+      title: "Urban Research Toolkit",
+      note: "A toolkit for urban research: urban analysis platforms, charts and BI, geovisualization, programming libraries, word clouds, and statistical analysis.",
       empty: "No tools match this search. Try a different keyword."
     },
     dataCat: {
@@ -313,6 +336,7 @@ const i18n = {
     },
     vizCat: {
       all: "All",
+      analysis: "Analysis Tools",
       chart: "Charts & BI",
       geo: "Geovisualization",
       code: "Libraries",
@@ -330,6 +354,18 @@ const i18n = {
       theory: "Urban Theory",
       form: "Urban Form",
       design: "Urban Design"
+    },
+    programs: {
+      title: "Global Urban Research Programs",
+      note: "A worldwide shortlist of universities and labs in urban research, urban analytics, urban science, and urban informatics — with research areas, lead faculty, and how-to-apply links.",
+      empty: "No programs match this search. Try a different keyword.",
+      piLabel: "Lead"
+    },
+    progCat: {
+      all: "All",
+      apac: "Asia-Pacific",
+      na: "North America",
+      eu: "Europe"
     },
     filters: {
       all: "All",
@@ -354,11 +390,13 @@ const i18n = {
     },
     footer: {
       title: "SCL Urban Research Institute",
-      source: "Sources: curated urban-research bookmarks and this global urban research scan.",
-      scope: "A global navigation library for urban research labs, institutions, and journals",
-      count: "76 sources · bilingual search supported",
-      library: "View Library",
-      backTop: "Back to Top"
+      tagline: "Urban research resource hub",
+      desc: "A one-stop navigator for urban research labs, institutions, journals, literature, data, tools, and classic books.",
+      navTitle: "Resources",
+      quickTitle: "Quick Links",
+      backTop: "Back to Top",
+      source: "Sources: curated urban-research bookmarks and web research.",
+      meta: (n) => `${n} resources · bilingual search supported`
     }
   }
 };
@@ -382,7 +420,10 @@ const regionTranslations = {
   德国: "Germany",
   亚洲: "Asia",
   欧洲: "Europe",
-  全球南方: "Global South"
+  全球南方: "Global South",
+  日本: "Japan",
+  澳大利亚: "Australia",
+  意大利: "Italy"
 };
 
 const tagTranslations = {
@@ -665,7 +706,36 @@ const tagTranslations = {
   "外部空间": "exterior space",
   "模式语言": "pattern language",
   "步行城市": "walkability",
-  "可持续": "sustainability"
+  "可持续": "sustainability",
+  "第三空间": "third places",
+  "公共健康": "public health",
+  "批判地理": "critical geography",
+  "社会公正": "social justice",
+  "类型学": "typology",
+  "集体记忆": "collective memory",
+  "序列视景": "serial vision",
+  "建筑理论": "architectural theory",
+  "城市文化": "urban culture",
+  "城市空间": "urban space",
+  "历史案例": "historic cases",
+  "空间尺度": "spatial scale",
+  "地理数据科学": "geospatial data science",
+  "3D城市模型": "3D city models",
+  "空间数据科学": "spatial data science",
+  "复杂系统": "complex systems",
+  "等时圈": "isochrones",
+  "可达性": "accessibility",
+  "场地分析": "site analysis",
+  "规划分析": "planning analytics",
+  "情景模拟": "scenario modeling",
+  "公交可达": "transit access",
+  "三维规划": "3D planning",
+  "社会分析": "social analytics",
+  "生成式设计": "generative design",
+  "AI分析": "AI analysis",
+  "活动数据": "activity data",
+  "地理空间分析": "geospatial analysis",
+  "云平台": "cloud platform"
 };
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -677,6 +747,7 @@ document.addEventListener("DOMContentLoaded", () => {
   renderDataSources();
   renderVizTools();
   renderBooks();
+  renderPrograms();
   renderFeed(getFeedSeedItems());
   renderGlobalSearchResults();
 });
@@ -731,6 +802,15 @@ function bindEvents() {
     });
   });
 
+  document.querySelectorAll("[data-program-filter]").forEach((button) => {
+    button.addEventListener("click", () => {
+      state.programFilter = button.dataset.programFilter;
+      setActiveButton("[data-program-filter]", button);
+      renderPrograms();
+      renderGlobalSearchResults();
+    });
+  });
+
   document.querySelectorAll("[data-feed-filter]").forEach((button) => {
     button.addEventListener("click", () => {
       state.feedFilter = button.dataset.feedFilter;
@@ -748,6 +828,7 @@ function bindEvents() {
     renderDataSources();
     renderVizTools();
     renderBooks();
+    renderPrograms();
     renderFeed(state.feedItems.length ? state.feedItems : getFeedSeedItems());
     renderGlobalSearchResults();
   });
@@ -768,6 +849,7 @@ function setLanguage(lang) {
   renderDataSources();
   renderVizTools();
   renderBooks();
+  renderPrograms();
   renderFeed(state.feedItems.length ? state.feedItems : getFeedSeedItems());
   renderGlobalSearchResults();
   updateRefreshButton();
@@ -812,7 +894,7 @@ function setActiveButton(selector, activeButton) {
 
 // 为筛选按钮组设置初始 aria-pressed（与 .is-active 对齐）。
 function initFilterAria() {
-  ["[data-source-filter]", "[data-lit-filter]", "[data-data-filter]", "[data-viz-filter]", "[data-book-filter]", "[data-feed-filter]"].forEach((selector) => {
+  ["[data-source-filter]", "[data-lit-filter]", "[data-data-filter]", "[data-viz-filter]", "[data-book-filter]", "[data-program-filter]", "[data-feed-filter]"].forEach((selector) => {
     document.querySelectorAll(selector).forEach((button) => {
       button.setAttribute("aria-pressed", String(button.classList.contains("is-active")));
     });
@@ -825,6 +907,16 @@ function renderMetrics() {
   document.getElementById("totalSources").textContent = SOURCES.length;
   document.getElementById("journalCount").textContent = journals;
   document.getElementById("labCount").textContent = labs;
+
+  const footerMeta = document.getElementById("footerMeta");
+  if (footerMeta) {
+    const total = SOURCES.length +
+      (typeof ACADEMIC_SOURCES !== "undefined" ? ACADEMIC_SOURCES.length : 0) +
+      (typeof URBAN_DATA_SOURCES !== "undefined" ? URBAN_DATA_SOURCES.length : 0) +
+      (typeof DATAVIZ_TOOLS !== "undefined" ? DATAVIZ_TOOLS.length : 0) +
+      (typeof BOOKS !== "undefined" ? BOOKS.length : 0);
+    footerMeta.textContent = t("footer.meta")(total);
+  }
 }
 
 function renderSources() {
@@ -867,6 +959,43 @@ function filteredSources() {
   });
 }
 
+// 各分类的主题图标（lucide 风格线性 SVG，随卡片 accent 着色）。
+const CATEGORY_ICON_PATHS = {
+  litCat: {
+    general: '<circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/>',
+    index: '<path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/>',
+    oa: '<rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 9.9-1"/>',
+    cn: '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M9 13h6"/><path d="M9 17h6"/>',
+    tool: '<circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="M8.6 13.5l6.8 4"/><path d="M15.4 6.5l-6.8 4"/>'
+  },
+  dataCat: {
+    gov: '<line x1="3" y1="22" x2="21" y2="22"/><line x1="6" y1="18" x2="6" y2="11"/><line x1="10" y1="18" x2="10" y2="11"/><line x1="14" y1="18" x2="14" y2="11"/><line x1="18" y1="18" x2="18" y2="11"/><polygon points="12 2 20 7 4 7"/>',
+    geo: '<circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>',
+    mobility: '<path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0z"/><circle cx="12" cy="10" r="3"/>',
+    api: '<polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/>',
+    thematic: '<polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/>'
+  },
+  vizCat: {
+    analysis: '<circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/>',
+    chart: '<line x1="12" y1="20" x2="12" y2="10"/><line x1="18" y1="20" x2="18" y2="4"/><line x1="6" y1="20" x2="6" y2="16"/>',
+    geo: '<polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/><line x1="8" y1="2" x2="8" y2="18"/><line x1="16" y1="6" x2="16" y2="22"/>',
+    code: '<polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/>',
+    text: '<polyline points="4 7 4 4 20 4 20 7"/><line x1="9" y1="20" x2="15" y2="20"/><line x1="12" y1="4" x2="12" y2="20"/>',
+    stat: '<path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/>'
+  },
+  bookCat: {
+    public: '<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>',
+    theory: '<path d="M9 18h6"/><path d="M10 22h4"/><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1 .23 2.23 1.5 3.5.76.76 1.23 1.52 1.41 2.5"/>',
+    form: '<rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>',
+    design: '<circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/>'
+  }
+};
+
+function categoryIcon(namespace, category) {
+  const paths = (CATEGORY_ICON_PATHS[namespace] || {})[category] || "";
+  return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${paths}</svg>`;
+}
+
 // 城市多源大数据 / 数据可视化工具 / 学术文献与检索：复用一套卡片渲染。
 function renderDataSources() {
   renderResourceGrid("bigdataGrid", URBAN_DATA_SOURCES, "data", state.dataFilter, "dataCat", "bigdata.empty");
@@ -901,7 +1030,10 @@ function renderBooks() {
         <span class="resource-cat">${escapeHtml(t(`bookCat.${book.category}`))}</span>
         <span class="resource-origin">${escapeHtml(String(book.year))}</span>
       </div>
-      <h3>${escapeHtml(bookTitle(book))}</h3>
+      <div class="resource-head">
+        <span class="resource-icon">${categoryIcon("bookCat", book.category)}</span>
+        <h3>${escapeHtml(bookTitle(book))}</h3>
+      </div>
       <p class="book-author">${escapeHtml(book.author)}</p>
       <p>${escapeHtml(bookDescription(book))}</p>
       <div class="tag-row">
@@ -940,6 +1072,65 @@ function searchableBookText(book) {
   ].join(" ").toLowerCase();
 }
 
+// 海外城市分析院校申请：专用卡片（学校 + 实验室 + 主导老师 + 申请入口）。
+const PROGRAM_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 10 12 5 2 10l10 5 10-5Z"/><path d="M6 12v5c0 1 2.5 3 6 3s6-2 6-3v-5"/></svg>';
+
+function renderPrograms() {
+  const grid = document.getElementById("programsGrid");
+  if (!grid || typeof OVERSEAS_PROGRAMS === "undefined") return;
+
+  const items = OVERSEAS_PROGRAMS.filter((program) => {
+    const matchesCat = state.query || state.programFilter === "all" || program.category === state.programFilter;
+    return matchesCat && (!state.query || searchableProgramText(program).includes(state.query));
+  });
+
+  if (!items.length) {
+    grid.innerHTML = `<div class="empty-state">${escapeHtml(t("programs.empty"))}</div>`;
+    return;
+  }
+
+  grid.innerHTML = items.map((program) => `
+    <article class="resource-card program-card">
+      <div class="resource-top">
+        <span class="resource-cat">${escapeHtml(t(`progCat.${program.category}`))}</span>
+        <span class="resource-origin">${escapeHtml(localizeRegion(program.region))}</span>
+      </div>
+      <div class="resource-head">
+        <span class="resource-icon">${PROGRAM_ICON}</span>
+        <h3>${escapeHtml(program.school)}</h3>
+      </div>
+      <p class="program-lab">${escapeHtml(program.lab)}</p>
+      <p class="program-meta">${escapeHtml(t("programs.piLabel"))}: ${escapeHtml(program.pi)}</p>
+      <p>${escapeHtml(programDescription(program))}</p>
+      <div class="tag-row">
+        ${program.tags.map((tag) => `<span>${escapeHtml(localizeTag(tag))}</span>`).join("")}
+      </div>
+      <div class="card-actions">
+        <a href="${program.url}" target="_blank" rel="noreferrer">${escapeHtml(t("actions.apply"))}</a>
+      </div>
+    </article>
+  `).join("");
+}
+
+function programDescription(program) {
+  return state.lang === "zh" ? program.description : (program.descriptionEn || program.description);
+}
+
+function searchableProgramText(program) {
+  return [
+    program.school,
+    program.lab,
+    program.pi,
+    program.region,
+    localizeRegion(program.region),
+    t(`progCat.${program.category}`),
+    program.description,
+    program.descriptionEn,
+    ...program.tags,
+    ...program.tags.map(localizeTag)
+  ].join(" ").toLowerCase();
+}
+
 function renderResourceGrid(gridId, list, kind, activeFilter, catNamespace, emptyKey) {
   const grid = document.getElementById(gridId);
   if (!grid || typeof list === "undefined") return;
@@ -963,7 +1154,10 @@ function renderResourceGrid(gridId, list, kind, activeFilter, catNamespace, empt
           <span class="resource-origin">${escapeHtml(localizeRegion(item.origin))}</span>
         </span>
       </div>
-      <h3>${escapeHtml(item.name)}</h3>
+      <div class="resource-head">
+        <span class="resource-icon">${categoryIcon(catNamespace, item.category)}</span>
+        <h3>${escapeHtml(item.name)}</h3>
+      </div>
       <p>${escapeHtml(resourceDescription(item))}</p>
       <div class="tag-row">
         ${item.tags.map((tag) => `<span>${escapeHtml(localizeTag(tag))}</span>`).join("")}
@@ -1035,7 +1229,8 @@ function buildGlobalSearchItems() {
     ...literatureSearchItems(),
     ...dataSourceSearchItems(),
     ...vizToolSearchItems(),
-    ...bookSearchItems()
+    ...bookSearchItems(),
+    ...programSearchItems()
   ].map((item) => ({
     ...item,
     searchText: [
@@ -1101,10 +1296,17 @@ function pageSearchItems() {
     },
     {
       type: t("search.page"),
+      title: t("programs.title"),
+      summary: t("programs.note"),
+      href: "#programs",
+      keywords: ["海外院校申请", "留学", "城市分析", "香港大学", "新加坡国立大学", "UCL", "MIT"]
+    },
+    {
+      type: t("search.page"),
       title: t("footer.title"),
-      summary: [t("footer.source"), t("footer.scope"), t("footer.count")].join(" "),
+      summary: [t("footer.desc"), t("footer.source")].join(" "),
       href: "#home",
-      keywords: ["数据来源", "页脚", "回到顶部"]
+      keywords: ["数据来源", "页脚", "资源导航", "回到顶部"]
     }
   ];
 }
@@ -1127,6 +1329,17 @@ function sourceSearchItems() {
     summary: `${sourceTypeLabel(source.type)} · ${localizeRegion(source.region)} · ${sourceDescription(source)}`,
     href: "#library",
     keywords: [source.folder, source.region, sourceTypeLabel(source.type), ...source.tags]
+  }));
+}
+
+function programSearchItems() {
+  if (typeof OVERSEAS_PROGRAMS === "undefined") return [];
+  return OVERSEAS_PROGRAMS.map((program) => ({
+    type: t("search.program"),
+    title: `${program.school} · ${program.lab}`,
+    summary: `${t(`progCat.${program.category}`)} · ${localizeRegion(program.region)} · ${programDescription(program)}`,
+    href: "#programs",
+    keywords: [program.school, program.lab, program.pi, program.region, t(`progCat.${program.category}`), ...program.tags]
   }));
 }
 
@@ -1379,8 +1592,11 @@ async function fetchJournalItems(source) {
   if (source.issn) {
     items.push(...await tryFetchItems(() => fetchCrossref(source)));
   }
-  if (source.feed) {
+  if (!items.length && source.feed) {
     items.push(...await tryFetchItems(() => fetchFeed(source)));
+  }
+  if (!items.length) {
+    items.push(...await tryFetchItems(() => guessFeedItems(source)));
   }
   if (!items.length) {
     items.push(...await tryFetchItems(() => fetchOfficialPageItems(source, "paper")));
@@ -1394,10 +1610,13 @@ async function fetchInstitutionItems(source) {
     items.push(...await tryFetchItems(() => fetchFeed(source)));
   }
   if (!items.length) {
-    items.push(...await tryFetchItems(() => fetchOfficialPageItems(source, "lab")));
+    items.push(...await tryFetchItems(() => guessFeedItems(source)));
   }
   if (!items.length) {
     items.push(...await tryFetchItems(() => discoverFeedItems(source)));
+  }
+  if (!items.length) {
+    items.push(...await tryFetchItems(() => fetchOfficialPageItems(source, "lab")));
   }
   return items.length ? items : [];
 }
@@ -1706,6 +1925,58 @@ async function fetchText(url) {
   }
 
   throw new Error(`All proxies failed ${url}`);
+}
+
+// 轻量抓取：仅直连 + 首个代理、较短超时，用于 RSS 端点探测，避免探测拖慢刷新。
+async function fetchTextQuick(url) {
+  const cached = readFetchCache(url);
+  if (cached !== null) return cached;
+  try {
+    const direct = await fetchWithTimeout(url, { headers: { Accept: "application/rss+xml, application/xml" } }, 4000);
+    if (direct.ok) {
+      const text = await direct.text();
+      writeFetchCache(url, text);
+      return text;
+    }
+  } catch (error) {
+    // 转首个代理。
+  }
+  const proxied = await fetchWithTimeout(CORS_PROXIES[0](url), {}, 4000);
+  if (!proxied.ok) throw new Error(`Quick fetch failed ${url}`);
+  const text = await proxied.text();
+  if (!text) throw new Error(`Empty quick fetch ${url}`);
+  writeFetchCache(url, text);
+  return text;
+}
+
+// 自动探测来源站点的常见 RSS 端点，命中有效 feed 即返回其条目。
+async function guessFeedItems(source) {
+  const origin = safeOrigin(source.url) || safeOrigin(source.latestUrl);
+  if (!origin) return [];
+  const attempts = GUESS_FEED_PATHS.map((path) => async () => {
+    const text = await fetchTextQuick(origin + path);
+    if (!looksLikeFeed(text)) throw new Error("not a feed");
+    const items = parseFeedText(text, source).slice(0, 6);
+    if (!items.length) throw new Error("empty feed");
+    return items;
+  });
+  try {
+    return await Promise.any(attempts.map((run) => run()));
+  } catch (error) {
+    return [];
+  }
+}
+
+function looksLikeFeed(text) {
+  return /<rss[\s>]|<feed[\s>]|<rdf:RDF/i.test((text || "").slice(0, 800));
+}
+
+function safeOrigin(url) {
+  try {
+    return new URL(url).origin;
+  } catch (error) {
+    return "";
+  }
 }
 
 function readFetchCache(url) {
