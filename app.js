@@ -1198,7 +1198,7 @@ function searchableProgramText(program) {
 const STAR_ICON = '<svg viewBox="0 0 24 24" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>';
 
 // 初始化 Supabase 客户端（配置缺失时为 null，登录/收藏会给出提示）
-const supabase = (window.supabase && window.SUPABASE_URL && window.SUPABASE_ANON_KEY
+const sbClient = (window.supabase && window.SUPABASE_URL && window.SUPABASE_ANON_KEY
     && !/你的项目ID|把你的/.test(window.SUPABASE_URL + window.SUPABASE_ANON_KEY))
   ? window.supabase.createClient(window.SUPABASE_URL, window.SUPABASE_ANON_KEY)
   : null;
@@ -1206,8 +1206,8 @@ const supabase = (window.supabase && window.SUPABASE_URL && window.SUPABASE_ANON
 // 从后端拉取当前用户的收藏，填充 state.favorites（Set("type:id")）
 async function loadFavorites() {
   state.favorites = new Set();
-  if (!supabase || !state.user) return;
-  const { data, error } = await supabase
+  if (!sbClient || !state.user) return;
+  const { data, error } = await sbClient
     .from("favorites")
     .select("item_type,item_id")
     .eq("user_id", state.user.id);
@@ -1219,8 +1219,8 @@ async function loadFavorites() {
 async function loadSession() {
   state.user = null;
   state.favorites = new Set();
-  if (!supabase) return;
-  const { data } = await supabase.auth.getSession();
+  if (!sbClient) return;
+  const { data } = await sbClient.auth.getSession();
   const session = data && data.session;
   if (session) {
     state.user = { id: session.user.id, email: session.user.email };
@@ -1229,7 +1229,7 @@ async function loadSession() {
 }
 
 async function registerUser(email, password) {
-  const { data, error } = await supabase.auth.signUp({ email, password });
+  const { data, error } = await sbClient.auth.signUp({ email, password });
   if (error) throw error;
   if (!data.session) throw new Error("confirmEmail"); // 开了邮箱验证，需先验证
   state.user = { id: data.user.id, email: data.user.email };
@@ -1237,14 +1237,14 @@ async function registerUser(email, password) {
 }
 
 async function loginUser(email, password) {
-  const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+  const { data, error } = await sbClient.auth.signInWithPassword({ email, password });
   if (error) throw error;
   state.user = { id: data.user.id, email: data.user.email };
   await loadFavorites();
 }
 
 async function logoutUser() {
-  if (supabase) await supabase.auth.signOut();
+  if (sbClient) await sbClient.auth.signOut();
   state.user = null;
   state.favorites = new Set();
 }
@@ -1255,16 +1255,16 @@ function isFavorited(type, id) {
 
 // 乐观更新：先改本地 Set，再写库；失败则回滚
 async function toggleFavorite(type, id) {
-  if (!supabase || !state.user) return;
+  if (!sbClient || !state.user) return;
   const key = `${type}:${id}`;
   if (state.favorites.has(key)) {
     state.favorites.delete(key);
-    const { error } = await supabase.from("favorites").delete()
+    const { error } = await sbClient.from("favorites").delete()
       .eq("user_id", state.user.id).eq("item_type", type).eq("item_id", id);
     if (error) { console.error("取消收藏失败", error); state.favorites.add(key); }
   } else {
     state.favorites.add(key);
-    const { error } = await supabase.from("favorites")
+    const { error } = await sbClient.from("favorites")
       .insert({ user_id: state.user.id, item_type: type, item_id: id });
     if (error) { console.error("收藏失败", error); state.favorites.delete(key); }
   }
@@ -1400,7 +1400,7 @@ async function handleAuthSubmit(event) {
   const password = document.getElementById("authPassword").value;
   if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) { showAuthError(t("auth.errEmail")); return; }
   if (password.length < 6) { showAuthError(t("auth.errPassword")); return; }
-  if (!supabase) { showAuthError("后端未配置：请在 supabase-config.js 填入 Project URL 和 anon key"); return; }
+  if (!sbClient) { showAuthError("后端未配置：请在 supabase-config.js 填入 Project URL 和 anon key"); return; }
   const submitBtn = document.getElementById("authSubmit");
   if (submitBtn) submitBtn.disabled = true;
   try {
