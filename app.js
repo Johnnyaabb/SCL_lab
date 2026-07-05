@@ -229,7 +229,7 @@ const i18n = {
       toLogin: "已有账号？去登录",
       favAria: "收藏 / 取消收藏",
       favEmpty: "还没有收藏。点击任意卡片右下角的 ★ 即可收藏。",
-      loginToFav: "请先登录再收藏",
+      registerSuccess: "注册成功！请到邮箱点击验证链接，验证后回到这里登录。",
       errEmail: "请输入有效邮箱",
       errPassword: "密码至少 6 位",
       errNotRegistered: "该邮箱尚未注册，请先注册",
@@ -408,7 +408,7 @@ const i18n = {
       toLogin: "Have an account? Sign in",
       favAria: "Save / unsave",
       favEmpty: "No favorites yet. Tap the ★ on any card to save it.",
-      loginToFav: "Please sign in to save",
+      registerSuccess: "Account created! Check your email for the verification link, then sign in here.",
       errEmail: "Enter a valid email",
       errPassword: "Password must be at least 6 characters",
       errNotRegistered: "This email is not registered yet — please sign up",
@@ -789,6 +789,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   await loadSession();
   bindEvents();
   bindAuthEvents();
+  bindAuthStateSync();
   applyTranslations();
   renderMetrics();
   renderAccount();
@@ -1249,6 +1250,28 @@ async function logoutUser() {
   state.favorites = new Set();
 }
 
+// 跨标签页 / token 过期时同步登录态：任一标签页登录或登出，其它标签页自动跟随
+function bindAuthStateSync() {
+  if (!sbClient) return;
+  sbClient.auth.onAuthStateChange((event, session) => {
+    if (event === "INITIAL_SESSION") return; // 初始会话已由 loadSession 处理
+    const prevId = state.user ? state.user.id : null;
+    const nextId = session ? session.user.id : null;
+    if (prevId === nextId) return; // 无实质变化（如纯 token 刷新），不重复渲染
+    // 官方建议：勿在回调里直接 await 其它 supabase 调用，用 setTimeout 延后以避免死锁
+    setTimeout(async () => {
+      if (session) {
+        state.user = { id: session.user.id, email: session.user.email };
+        await loadFavorites();
+      } else {
+        state.user = null;
+        state.favorites = new Set();
+      }
+      afterAuthChange();
+    }, 0);
+  });
+}
+
 function isFavorited(type, id) {
   return state.favorites.has(`${type}:${id}`);
 }
@@ -1408,8 +1431,19 @@ async function handleAuthSubmit(event) {
     else await loginUser(email, password);
   } catch (error) {
     const msg = String((error && error.message) || error);
-    if (msg === "confirmEmail") showAuthError("注册成功，请到邮箱点击验证链接后再登录");
-    else if (/already|registered/i.test(msg)) showAuthError(t("auth.errExists"));
+    if (msg === "confirmEmail") {
+      // 注册成功但需邮箱验证：切回登录 tab，用提示条给出正面反馈，保留邮箱、清空密码
+      state.authMode = "login";
+      applyAuthMode();
+      const err = document.getElementById("authError");
+      if (err) { err.hidden = true; err.textContent = ""; }
+      const demo = document.getElementById("authDemo");
+      if (demo) demo.textContent = t("auth.registerSuccess");
+      const pw = document.getElementById("authPassword");
+      if (pw) pw.value = "";
+      return;
+    }
+    if (/already|registered/i.test(msg)) showAuthError(t("auth.errExists"));
     else if (/invalid login|credentials/i.test(msg)) showAuthError("邮箱或密码错误");
     else showAuthError(msg);
     return;
