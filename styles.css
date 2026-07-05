@@ -1288,3 +1288,209 @@ h3 {
     white-space: nowrap;
   }
 }
+
+/* ============ 账户 / 登录 / 收藏 ============ */
+.account-area {
+  display: flex;
+  align-items: center;
+}
+
+.account-user {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.account-btn {
+  min-height: 38px;
+  padding: 0 14px;
+  border: 1px solid var(--teal);
+  border-radius: 8px;
+  background: var(--teal);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 750;
+  cursor: pointer;
+  transition: transform 0.16s ease, background 0.16s ease, border-color 0.16s ease;
+}
+
+.account-btn:hover {
+  transform: translateY(-1px);
+}
+
+.account-btn--ghost {
+  background: var(--surface);
+  color: var(--teal);
+  border-color: rgba(15, 118, 110, 0.28);
+}
+
+.account-email {
+  max-width: 170px;
+  overflow: hidden;
+  color: var(--muted);
+  font-size: 13px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* 收藏按钮（卡片操作行右侧） */
+.fav-btn {
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  margin-left: auto;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--muted);
+  cursor: pointer;
+  transition: color 0.16s ease, border-color 0.16s ease, background 0.16s ease, transform 0.16s ease;
+}
+
+.fav-btn:hover {
+  transform: translateY(-1px);
+  border-color: var(--amber);
+  color: var(--amber);
+}
+
+.fav-btn svg {
+  width: 17px;
+  height: 17px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linejoin: round;
+}
+
+.fav-btn[aria-pressed="true"] {
+  border-color: #e7dcc7;
+  background: var(--amber-soft);
+  color: var(--amber);
+}
+
+.fav-btn[aria-pressed="true"] svg {
+  fill: currentColor;
+}
+
+/* 我的收藏卡片：用中性/teal 强调 */
+.fav-card {
+  --res-accent: var(--teal);
+  --res-soft: var(--green-soft);
+  --res-line: var(--line);
+}
+
+/* 登录/注册 模态框 */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background: rgba(16, 24, 40, 0.5);
+  backdrop-filter: blur(2px);
+}
+
+.modal-overlay[hidden] {
+  display: none;
+}
+
+.modal {
+  position: relative;
+  width: 100%;
+  max-width: 380px;
+  padding: 24px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--surface);
+  box-shadow: var(--shadow);
+}
+
+.modal h3 {
+  margin: 0 0 6px;
+  font-size: 20px;
+}
+
+.modal-close {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 32px;
+  height: 32px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--muted);
+  font-size: 22px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.modal-close:hover {
+  background: var(--surface-strong);
+}
+
+.modal-demo {
+  margin: 0 0 16px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  background: var(--amber-soft);
+  color: #664b1c;
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.modal-field {
+  display: grid;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+
+.modal-field span {
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 750;
+}
+
+.modal-field input {
+  min-height: 44px;
+  padding: 0 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fbfcfc;
+  color: var(--ink);
+  outline: none;
+}
+
+.modal-field input:focus {
+  border-color: var(--teal);
+  box-shadow: 0 0 0 3px rgba(15, 118, 110, 0.14);
+}
+
+.modal-error {
+  margin: 0 0 12px;
+  color: var(--coral);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.modal .primary-button {
+  width: 100%;
+  min-height: 46px;
+}
+
+.modal-switch {
+  margin: 14px 0 0;
+  text-align: center;
+}
+
+.modal-switch button {
+  border: 0;
+  background: transparent;
+  color: var(--teal);
+  font-size: 13px;
+  font-weight: 750;
+  cursor: pointer;
+}

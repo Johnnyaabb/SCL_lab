@@ -6,6 +6,9 @@ const state = {
   bookFilter: "all",
   programFilter: "all",
   feedFilter: "all",
+  user: null,
+  favorites: new Set(),
+  authMode: "login",
   query: "",
   queryRaw: "",
   feedItems: [],
@@ -210,6 +213,28 @@ const i18n = {
       na: "北美",
       eu: "欧洲"
     },
+    auth: {
+      login: "登录",
+      logout: "登出",
+      register: "注册",
+      account: "账户",
+      myFavorites: "我的收藏",
+      loginTitle: "登录",
+      registerTitle: "注册",
+      demoNote: "演示模式：尚未接入后端，请勿输入真实密码。",
+      favNote: "你收藏的机构、数据、工具、书籍与院校。（演示：暂存在本地浏览器，接入后端后将同步到账号）",
+      emailLabel: "邮箱",
+      passwordLabel: "密码",
+      toRegister: "没有账号？去注册",
+      toLogin: "已有账号？去登录",
+      favAria: "收藏 / 取消收藏",
+      favEmpty: "还没有收藏。点击任意卡片右下角的 ★ 即可收藏。",
+      loginToFav: "请先登录再收藏",
+      errEmail: "请输入有效邮箱",
+      errPassword: "密码至少 6 位",
+      errNotRegistered: "该邮箱尚未注册，请先注册",
+      errExists: "该邮箱已注册，请直接登录"
+    },
     filters: {
       all: "全部",
       progress: "研究进展",
@@ -366,6 +391,28 @@ const i18n = {
       apac: "Asia-Pacific",
       na: "North America",
       eu: "Europe"
+    },
+    auth: {
+      login: "Sign In",
+      logout: "Sign Out",
+      register: "Sign Up",
+      account: "Account",
+      myFavorites: "My Favorites",
+      loginTitle: "Sign In",
+      registerTitle: "Create Account",
+      demoNote: "Demo mode: backend not connected yet — do not enter a real password.",
+      favNote: "Institutions, data, tools, books, and programs you saved. (Demo: stored locally; will sync to your account once the backend is connected.)",
+      emailLabel: "Email",
+      passwordLabel: "Password",
+      toRegister: "No account? Sign up",
+      toLogin: "Have an account? Sign in",
+      favAria: "Save / unsave",
+      favEmpty: "No favorites yet. Tap the ★ on any card to save it.",
+      loginToFav: "Please sign in to save",
+      errEmail: "Enter a valid email",
+      errPassword: "Password must be at least 6 characters",
+      errNotRegistered: "This email is not registered yet — please sign up",
+      errExists: "This email is already registered — please sign in"
     },
     filters: {
       all: "All",
@@ -738,16 +785,20 @@ const tagTranslations = {
   "云平台": "cloud platform"
 };
 
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", async () => {
+  await loadSession();
   bindEvents();
+  bindAuthEvents();
   applyTranslations();
   renderMetrics();
+  renderAccount();
   renderSources();
   renderLiterature();
   renderDataSources();
   renderVizTools();
   renderBooks();
   renderPrograms();
+  renderFavorites();
   renderFeed(getFeedSeedItems());
   renderGlobalSearchResults();
 });
@@ -850,6 +901,9 @@ function setLanguage(lang) {
   renderVizTools();
   renderBooks();
   renderPrograms();
+  renderAccount();
+  renderFavorites();
+  applyAuthMode();
   renderFeed(state.feedItems.length ? state.feedItems : getFeedSeedItems());
   renderGlobalSearchResults();
   updateRefreshButton();
@@ -946,6 +1000,7 @@ function renderSources() {
       <div class="card-actions">
         <a href="${source.url}" target="_blank" rel="noreferrer">${escapeHtml(t("actions.official"))}</a>
         <a href="${source.latestUrl || source.url}" target="_blank" rel="noreferrer">${escapeHtml(t("actions.latest"))}</a>
+        ${favoriteButton("source", source.id)}
       </div>
     </article>
   `).join("");
@@ -1041,6 +1096,7 @@ function renderBooks() {
       </div>
       <div class="card-actions">
         <a href="${bookUrl(book)}" target="_blank" rel="noreferrer">${escapeHtml(t("actions.book"))}</a>
+        ${favoriteButton("book", book.id)}
       </div>
     </article>
   `).join("");
@@ -1107,6 +1163,7 @@ function renderPrograms() {
       </div>
       <div class="card-actions">
         <a href="${program.url}" target="_blank" rel="noreferrer">${escapeHtml(t("actions.apply"))}</a>
+        ${favoriteButton("program", program.id)}
       </div>
     </article>
   `).join("");
@@ -1129,6 +1186,275 @@ function searchableProgramText(program) {
     ...program.tags,
     ...program.tags.map(localizeTag)
   ].join(" ").toLowerCase();
+}
+
+/* ============================================================
+   用户登录 + 收藏（Supabase 后端）
+   - 账号走 Supabase Auth（邮箱+密码），不自建用户表。
+   - 收藏存 public.favorites 表，每行 = 某用户收藏的某张卡。
+   - state.favorites 仍是 Set("type:id")，UI 层逻辑不变。
+   连接凭证在 supabase-config.js 里填写。
+   ============================================================ */
+const STAR_ICON = '<svg viewBox="0 0 24 24" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>';
+
+// 初始化 Supabase 客户端（配置缺失时为 null，登录/收藏会给出提示）
+const supabase = (window.supabase && window.SUPABASE_URL && window.SUPABASE_ANON_KEY
+    && !/你的项目ID|把你的/.test(window.SUPABASE_URL + window.SUPABASE_ANON_KEY))
+  ? window.supabase.createClient(window.SUPABASE_URL, window.SUPABASE_ANON_KEY)
+  : null;
+
+// 从后端拉取当前用户的收藏，填充 state.favorites（Set("type:id")）
+async function loadFavorites() {
+  state.favorites = new Set();
+  if (!supabase || !state.user) return;
+  const { data, error } = await supabase
+    .from("favorites")
+    .select("item_type,item_id")
+    .eq("user_id", state.user.id);
+  if (error) { console.error("加载收藏失败", error); return; }
+  data.forEach((row) => state.favorites.add(`${row.item_type}:${row.item_id}`));
+}
+
+// 启动时恢复已登录会话（Supabase 会自动持久化 token）
+async function loadSession() {
+  state.user = null;
+  state.favorites = new Set();
+  if (!supabase) return;
+  const { data } = await supabase.auth.getSession();
+  const session = data && data.session;
+  if (session) {
+    state.user = { id: session.user.id, email: session.user.email };
+    await loadFavorites();
+  }
+}
+
+async function registerUser(email, password) {
+  const { data, error } = await supabase.auth.signUp({ email, password });
+  if (error) throw error;
+  if (!data.session) throw new Error("confirmEmail"); // 开了邮箱验证，需先验证
+  state.user = { id: data.user.id, email: data.user.email };
+  await loadFavorites();
+}
+
+async function loginUser(email, password) {
+  const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+  if (error) throw error;
+  state.user = { id: data.user.id, email: data.user.email };
+  await loadFavorites();
+}
+
+async function logoutUser() {
+  if (supabase) await supabase.auth.signOut();
+  state.user = null;
+  state.favorites = new Set();
+}
+
+function isFavorited(type, id) {
+  return state.favorites.has(`${type}:${id}`);
+}
+
+// 乐观更新：先改本地 Set，再写库；失败则回滚
+async function toggleFavorite(type, id) {
+  if (!supabase || !state.user) return;
+  const key = `${type}:${id}`;
+  if (state.favorites.has(key)) {
+    state.favorites.delete(key);
+    const { error } = await supabase.from("favorites").delete()
+      .eq("user_id", state.user.id).eq("item_type", type).eq("item_id", id);
+    if (error) { console.error("取消收藏失败", error); state.favorites.add(key); }
+  } else {
+    state.favorites.add(key);
+    const { error } = await supabase.from("favorites")
+      .insert({ user_id: state.user.id, item_type: type, item_id: id });
+    if (error) { console.error("收藏失败", error); state.favorites.delete(key); }
+  }
+}
+
+function favoriteButton(type, id) {
+  const pressed = isFavorited(type, id);
+  const label = escapeHtml(t("auth.favAria"));
+  return `<button class="fav-btn" type="button" data-fav data-fav-type="${type}" data-fav-id="${escapeHtml(String(id))}" aria-pressed="${pressed}" aria-label="${label}" title="${label}">${STAR_ICON}</button>`;
+}
+
+async function handleFavClick(button) {
+  if (!state.user) {
+    openAuthModal("login");
+    return;
+  }
+  await toggleFavorite(button.dataset.favType, button.dataset.favId);
+  syncFavButtons();
+  renderFavorites();
+}
+
+function syncFavButtons() {
+  document.querySelectorAll("[data-fav]").forEach((button) => {
+    button.setAttribute("aria-pressed", String(isFavorited(button.dataset.favType, button.dataset.favId)));
+  });
+}
+
+function resolveFavItem(type, id) {
+  const find = (arr) => (typeof arr !== "undefined" ? arr.find((x) => x.id === id) : null);
+  switch (type) {
+    case "source": { const s = find(SOURCES); return s && { name: s.name, url: s.url, label: t("search.source") }; }
+    case "data": { const s = find(URBAN_DATA_SOURCES); return s && { name: s.name, url: s.url, label: t("search.dataSource") }; }
+    case "viz": { const s = find(DATAVIZ_TOOLS); return s && { name: s.name, url: s.url, label: t("search.vizTool") }; }
+    case "lit": { const s = find(ACADEMIC_SOURCES); return s && { name: s.name, url: s.url, label: t("search.literature") }; }
+    case "book": { const b = find(BOOKS); return b && { name: bookTitle(b), url: bookUrl(b), label: t("search.book") }; }
+    case "program": { const p = find(OVERSEAS_PROGRAMS); return p && { name: `${p.school} · ${p.lab}`, url: p.url, label: t("search.program") }; }
+    default: return null;
+  }
+}
+
+function renderAccount() {
+  const loginBtn = document.getElementById("loginBtn");
+  const userBox = document.getElementById("accountUser");
+  const emailEl = document.getElementById("accountEmail");
+  if (!loginBtn || !userBox) return;
+  if (state.user) {
+    loginBtn.hidden = true;
+    userBox.hidden = false;
+    if (emailEl) emailEl.textContent = state.user.email;
+  } else {
+    loginBtn.hidden = false;
+    userBox.hidden = true;
+  }
+}
+
+function renderFavorites() {
+  const section = document.getElementById("favorites");
+  const grid = document.getElementById("favoritesGrid");
+  if (!section || !grid) return;
+  if (!state.user) {
+    section.hidden = true;
+    grid.innerHTML = "";
+    return;
+  }
+  section.hidden = false;
+  const items = [...state.favorites]
+    .map((key) => {
+      const idx = key.indexOf(":");
+      return { type: key.slice(0, idx), id: key.slice(idx + 1) };
+    })
+    .map((fav) => ({ ...fav, data: resolveFavItem(fav.type, fav.id) }))
+    .filter((fav) => fav.data);
+
+  if (!items.length) {
+    grid.innerHTML = `<div class="empty-state">${escapeHtml(t("auth.favEmpty"))}</div>`;
+    return;
+  }
+  grid.innerHTML = items.map((fav) => `
+    <article class="resource-card fav-card">
+      <div class="resource-top">
+        <span class="resource-cat">${escapeHtml(fav.data.label)}</span>
+      </div>
+      <div class="resource-head">
+        <h3>${escapeHtml(fav.data.name)}</h3>
+      </div>
+      <div class="card-actions">
+        <a href="${fav.data.url}" target="_blank" rel="noreferrer">${escapeHtml(t("actions.open"))}</a>
+        ${favoriteButton(fav.type, fav.id)}
+      </div>
+    </article>
+  `).join("");
+}
+
+function openAuthModal(mode) {
+  state.authMode = mode || "login";
+  const modal = document.getElementById("authModal");
+  if (!modal) return;
+  applyAuthMode();
+  const err = document.getElementById("authError");
+  if (err) { err.hidden = true; err.textContent = ""; }
+  const form = document.getElementById("authForm");
+  if (form) form.reset();
+  modal.hidden = false;
+  const email = document.getElementById("authEmail");
+  if (email) email.focus();
+}
+
+function closeAuthModal() {
+  const modal = document.getElementById("authModal");
+  if (modal) modal.hidden = true;
+}
+
+function applyAuthMode() {
+  const isReg = state.authMode === "register";
+  const title = document.getElementById("authTitle");
+  const submit = document.getElementById("authSubmit");
+  const switchBtn = document.getElementById("authSwitchBtn");
+  const demo = document.getElementById("authDemo");
+  if (title) title.textContent = t(isReg ? "auth.registerTitle" : "auth.loginTitle");
+  if (submit) submit.textContent = t(isReg ? "auth.register" : "auth.login");
+  if (switchBtn) switchBtn.textContent = t(isReg ? "auth.toLogin" : "auth.toRegister");
+  if (demo) demo.textContent = t("auth.demoNote");
+}
+
+function showAuthError(message) {
+  const err = document.getElementById("authError");
+  if (err) { err.textContent = message; err.hidden = false; }
+}
+
+async function handleAuthSubmit(event) {
+  event.preventDefault();
+  const email = document.getElementById("authEmail").value.trim();
+  const password = document.getElementById("authPassword").value;
+  if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) { showAuthError(t("auth.errEmail")); return; }
+  if (password.length < 6) { showAuthError(t("auth.errPassword")); return; }
+  if (!supabase) { showAuthError("后端未配置：请在 supabase-config.js 填入 Project URL 和 anon key"); return; }
+  const submitBtn = document.getElementById("authSubmit");
+  if (submitBtn) submitBtn.disabled = true;
+  try {
+    if (state.authMode === "register") await registerUser(email, password);
+    else await loginUser(email, password);
+  } catch (error) {
+    const msg = String((error && error.message) || error);
+    if (msg === "confirmEmail") showAuthError("注册成功，请到邮箱点击验证链接后再登录");
+    else if (/already|registered/i.test(msg)) showAuthError(t("auth.errExists"));
+    else if (/invalid login|credentials/i.test(msg)) showAuthError("邮箱或密码错误");
+    else showAuthError(msg);
+    return;
+  } finally {
+    if (submitBtn) submitBtn.disabled = false;
+  }
+  closeAuthModal();
+  afterAuthChange();
+}
+
+function afterAuthChange() {
+  renderAccount();
+  renderFavorites();
+  syncFavButtons();
+  renderGlobalSearchResults();
+}
+
+function bindAuthEvents() {
+  const loginBtn = document.getElementById("loginBtn");
+  if (loginBtn) loginBtn.addEventListener("click", () => openAuthModal("login"));
+  const logoutBtn = document.getElementById("logoutBtn");
+  if (logoutBtn) logoutBtn.addEventListener("click", async () => { await logoutUser(); afterAuthChange(); });
+  const myFavBtn = document.getElementById("myFavBtn");
+  if (myFavBtn) myFavBtn.addEventListener("click", () => {
+    const section = document.getElementById("favorites");
+    if (section && !section.hidden) section.scrollIntoView({ behavior: "smooth" });
+  });
+  const form = document.getElementById("authForm");
+  if (form) form.addEventListener("submit", handleAuthSubmit);
+  const closeBtn = document.getElementById("authClose");
+  if (closeBtn) closeBtn.addEventListener("click", closeAuthModal);
+  const overlay = document.getElementById("authModal");
+  if (overlay) overlay.addEventListener("click", (event) => { if (event.target === overlay) closeAuthModal(); });
+  const switchBtn = document.getElementById("authSwitchBtn");
+  if (switchBtn) switchBtn.addEventListener("click", () => {
+    state.authMode = state.authMode === "register" ? "login" : "register";
+    applyAuthMode();
+    const err = document.getElementById("authError");
+    if (err) err.hidden = true;
+  });
+  document.addEventListener("keydown", (event) => { if (event.key === "Escape") closeAuthModal(); });
+  document.addEventListener("click", (event) => {
+    const button = event.target.closest("[data-fav]");
+    if (button) handleFavClick(button);
+  });
 }
 
 function renderResourceGrid(gridId, list, kind, activeFilter, catNamespace, emptyKey) {
@@ -1164,6 +1490,7 @@ function renderResourceGrid(gridId, list, kind, activeFilter, catNamespace, empt
       </div>
       <div class="card-actions">
         <a href="${item.url}" target="_blank" rel="noreferrer">${escapeHtml(t("actions.open"))}</a>
+        ${favoriteButton(kind, item.id)}
       </div>
     </article>
   `).join("");
