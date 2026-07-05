@@ -229,6 +229,7 @@ const i18n = {
       toLogin: "已有账号？去登录",
       favAria: "收藏 / 取消收藏",
       favEmpty: "还没有收藏。点击任意卡片右下角的 ★ 即可收藏。",
+      favNeedLogin: "登录后查看你收藏的机构、数据、工具、书籍与院校，跨设备同步。",
       registerSuccess: "注册成功！请到邮箱点击验证链接，验证后回到这里登录。",
       errEmail: "请输入有效邮箱",
       errPassword: "密码至少 6 位",
@@ -408,6 +409,7 @@ const i18n = {
       toLogin: "Have an account? Sign in",
       favAria: "Save / unsave",
       favEmpty: "No favorites yet. Tap the ★ on any card to save it.",
+      favNeedLogin: "Sign in to see the institutions, data, tools, books, and programs you saved — synced across devices.",
       registerSuccess: "Account created! Check your email for the verification link, then sign in here.",
       errEmail: "Enter a valid email",
       errPassword: "Password must be at least 6 characters",
@@ -872,7 +874,8 @@ function bindEvents() {
     });
   });
 
-  document.getElementById("globalSearch").addEventListener("input", (event) => {
+  const searchInput = document.getElementById("globalSearch");
+  if (searchInput) searchInput.addEventListener("input", (event) => {
     state.queryRaw = event.target.value.trim();
     state.query = state.queryRaw.toLowerCase();
     renderSources();
@@ -885,7 +888,8 @@ function bindEvents() {
     renderGlobalSearchResults();
   });
 
-  document.getElementById("refreshFeeds").addEventListener("click", refreshFrontiers);
+  const refreshBtn = document.getElementById("refreshFeeds");
+  if (refreshBtn) refreshBtn.addEventListener("click", refreshFrontiers);
 
   initFilterAria();
 }
@@ -959,9 +963,12 @@ function initFilterAria() {
 function renderMetrics() {
   const journals = SOURCES.filter((source) => source.type === "journal").length;
   const labs = SOURCES.filter((source) => source.type === "lab" || source.type === "institution").length;
-  document.getElementById("totalSources").textContent = SOURCES.length;
-  document.getElementById("journalCount").textContent = journals;
-  document.getElementById("labCount").textContent = labs;
+  const totalEl = document.getElementById("totalSources");
+  if (totalEl) {
+    totalEl.textContent = SOURCES.length;
+    document.getElementById("journalCount").textContent = journals;
+    document.getElementById("labCount").textContent = labs;
+  }
 
   const footerMeta = document.getElementById("footerMeta");
   if (footerMeta) {
@@ -976,6 +983,7 @@ function renderMetrics() {
 
 function renderSources() {
   const grid = document.getElementById("sourceGrid");
+  if (!grid) return;
   const sources = filteredSources();
 
   if (!sources.length) {
@@ -1347,9 +1355,19 @@ function renderFavorites() {
   const section = document.getElementById("favorites");
   const grid = document.getElementById("favoritesGrid");
   if (!section || !grid) return;
+  const isFavPage = document.body.dataset.page === "favorites";
   if (!state.user) {
-    section.hidden = true;
-    grid.innerHTML = "";
+    if (isFavPage) {
+      // 收藏独立页：未登录时给出提示与登录入口，而不是留白
+      section.hidden = false;
+      grid.innerHTML = `<div class="empty-state">
+        <p>${escapeHtml(t("auth.favNeedLogin"))}</p>
+        <button type="button" class="primary-button" data-open-login>${escapeHtml(t("auth.login"))}</button>
+      </div>`;
+    } else {
+      section.hidden = true;
+      grid.innerHTML = "";
+    }
     return;
   }
   section.hidden = false;
@@ -1466,11 +1484,6 @@ function bindAuthEvents() {
   if (loginBtn) loginBtn.addEventListener("click", () => openAuthModal("login"));
   const logoutBtn = document.getElementById("logoutBtn");
   if (logoutBtn) logoutBtn.addEventListener("click", async () => { await logoutUser(); afterAuthChange(); });
-  const myFavBtn = document.getElementById("myFavBtn");
-  if (myFavBtn) myFavBtn.addEventListener("click", () => {
-    const section = document.getElementById("favorites");
-    if (section && !section.hidden) section.scrollIntoView({ behavior: "smooth" });
-  });
   const form = document.getElementById("authForm");
   if (form) form.addEventListener("submit", handleAuthSubmit);
   const closeBtn = document.getElementById("authClose");
@@ -1488,6 +1501,7 @@ function bindAuthEvents() {
   document.addEventListener("click", (event) => {
     const button = event.target.closest("[data-fav]");
     if (button) handleFavClick(button);
+    if (event.target.closest("[data-open-login]")) openAuthModal("login");
   });
 }
 
@@ -1750,6 +1764,7 @@ function vizToolSearchItems() {
 
 function renderFeed(items) {
   const grid = document.getElementById("feedGrid");
+  if (!grid) return;
   const visibleItems = items.filter(feedItemMatchesCurrentView);
 
   if (!visibleItems.length) {

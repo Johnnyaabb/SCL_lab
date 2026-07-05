@@ -25,7 +25,7 @@
     <meta name="twitter:title" content="SCL城市研究所资源库">
     <meta name="twitter:description" content="追踪全球城市研究机构、实验室与期刊的最新动态。">
 
-    <link rel="stylesheet" href="styles.css?v=20260702-auth">
+    <link rel="stylesheet" href="styles.css?v=20260706d">
   </head>
   <body>
     <header class="site-header">
@@ -53,7 +53,7 @@
         <div class="account-area" aria-label="账户">
           <button class="account-btn" id="loginBtn" type="button" data-i18n="auth.login">登录</button>
           <div class="account-user" id="accountUser" hidden>
-            <button class="account-btn account-btn--ghost" id="myFavBtn" type="button" data-i18n="auth.myFavorites">我的收藏</button>
+            <a class="account-btn account-btn--ghost" href="favorites.html" data-i18n="auth.myFavorites">我的收藏</a>
             <span class="account-email" id="accountEmail"></span>
             <button class="account-btn account-btn--ghost" id="logoutBtn" type="button" data-i18n="auth.logout">登出</button>
           </div>
@@ -100,17 +100,6 @@
             <span data-i18n="metrics.labs">实验室与机构</span>
           </div>
         </div>
-      </section>
-
-      <section class="library-section fav-section" id="favorites" hidden aria-labelledby="favTitle">
-        <div class="section-heading">
-          <div>
-            <p class="eyebrow">My Favorites</p>
-            <h2 id="favTitle" data-i18n="auth.myFavorites">我的收藏</h2>
-            <p class="section-note" data-i18n="auth.favNote">你收藏的机构、数据、工具、书籍与院校，已同步到你的账号，换设备登录也能看到。</p>
-          </div>
-        </div>
-        <div class="source-grid resource-grid" id="favoritesGrid"></div>
       </section>
 
       <section class="feed-section" aria-labelledby="feedTitle">
@@ -303,6 +292,6 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="supabase-config.js?v=20260705"></script>
     <script src="data.js?v=20260702-auth"></script>
-    <script src="app.js?v=20260705-supabase"></script>
+    <script src="app.js?v=20260706d"></script>
   </body>
 </html>

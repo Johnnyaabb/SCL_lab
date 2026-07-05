@@ -1301,6 +1301,10 @@ h3 {
   gap: 8px;
 }
 
+.account-user[hidden] {
+  display: none;
+}
+
 .account-btn {
   min-height: 38px;
   padding: 0 14px;

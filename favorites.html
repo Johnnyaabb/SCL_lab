@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta http-equiv="cache-control" content="no-cache">
+    <title>我的收藏 · SCL城市研究所</title>
+    <meta
+      name="description"
+      content="你在 SCL城市研究所资源库收藏的机构、数据、工具、书籍与院校，登录后跨设备同步。"
+    >
+    <meta name="theme-color" content="#0f766e">
+    <link
+      rel="icon"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Crect width='40' height='40' rx='8' fill='%230f766e'/%3E%3Ctext x='20' y='27' font-family='Inter,system-ui,sans-serif' font-size='15' font-weight='800' fill='%23fff' text-anchor='middle'%3ESCL%3C/text%3E%3C/svg%3E"
+    >
+    <link rel="stylesheet" href="styles.css?v=20260706d">
+  </head>
+  <body data-page="favorites">
+    <header class="site-header">
+      <a class="brand" href="index.html" aria-label="SCL城市研究所首页">
+        <span class="brand-mark">SCL</span>
+        <span>
+          <strong data-i18n="brand.title">SCL城市研究所</strong>
+          <small>Labs, journals, signals</small>
+        </span>
+      </a>
+      <div class="header-actions">
+        <nav class="top-nav" aria-label="主导航">
+          <a href="index.html#home" data-i18n="nav.home">首页</a>
+          <a href="index.html#library" data-i18n="nav.library">资源库</a>
+          <a href="index.html#literature" data-i18n="nav.literature">文献检索</a>
+          <a href="index.html#bigdata" data-i18n="nav.bigdata">多源数据</a>
+          <a href="index.html#dataviz" data-i18n="nav.dataviz">研究工具集</a>
+          <a href="index.html#books" data-i18n="nav.books">书籍推荐</a>
+          <a href="index.html#programs" data-i18n="nav.programs">院校申请</a>
+        </nav>
+        <div class="language-switch" aria-label="语言切换">
+          <button class="is-active" type="button" data-lang-toggle="zh">中文</button>
+          <button type="button" data-lang-toggle="en">EN</button>
+        </div>
+        <div class="account-area" aria-label="账户">
+          <button class="account-btn" id="loginBtn" type="button" data-i18n="auth.login">登录</button>
+          <div class="account-user" id="accountUser" hidden>
+            <a class="account-btn account-btn--ghost is-active" href="favorites.html" data-i18n="auth.myFavorites">我的收藏</a>
+            <span class="account-email" id="accountEmail"></span>
+            <button class="account-btn account-btn--ghost" id="logoutBtn" type="button" data-i18n="auth.logout">登出</button>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <main>
+      <section class="library-section fav-section fav-page" id="favorites" aria-labelledby="favTitle">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">My Favorites</p>
+            <h2 id="favTitle" data-i18n="auth.myFavorites">我的收藏</h2>
+            <p class="section-note" data-i18n="auth.favNote">你收藏的机构、数据、工具、书籍与院校，已同步到你的账号，换设备登录也能看到。</p>
+          </div>
+        </div>
+        <div class="source-grid resource-grid" id="favoritesGrid"></div>
+      </section>
+    </main>
+
+    <footer class="site-footer" aria-label="页脚信息">
+      <div class="footer-top">
+        <div class="footer-brand">
+          <a class="footer-logo" href="index.html" aria-label="SCL城市研究所首页">
+            <span class="brand-mark">SCL</span>
+            <span>
+              <strong data-i18n="footer.title">SCL城市研究所</strong>
+              <small data-i18n="footer.tagline">城市研究资源导航</small>
+            </span>
+          </a>
+          <p class="footer-desc" data-i18n="footer.desc">汇集城市研究实验室、机构、期刊、文献、数据、工具与经典书籍的一站式导航。</p>
+        </div>
+        <nav class="footer-col" aria-label="资源导航">
+          <h4 data-i18n="footer.navTitle">资源导航</h4>
+          <a href="index.html#library" data-i18n="nav.library">资源库</a>
+          <a href="index.html#literature" data-i18n="nav.literature">文献检索</a>
+          <a href="index.html#bigdata" data-i18n="nav.bigdata">多源数据</a>
+          <a href="index.html#dataviz" data-i18n="nav.dataviz">研究工具集</a>
+          <a href="index.html#books" data-i18n="nav.books">书籍推荐</a>
+          <a href="index.html#programs" data-i18n="nav.programs">院校申请</a>
+        </nav>
+        <nav class="footer-col" aria-label="快速链接">
+          <h4 data-i18n="footer.quickTitle">快速链接</h4>
+          <a href="index.html#home" data-i18n="nav.home">首页</a>
+          <a href="index.html" data-i18n="actions.browse">浏览全部来源</a>
+          <a href="favorites.html" data-i18n="auth.myFavorites">我的收藏</a>
+        </nav>
+      </div>
+      <div class="footer-bottom">
+        <span data-i18n="footer.source">数据来源：城市研究相关收藏夹与全网检索整理。</span>
+        <span id="footerMeta"></span>
+      </div>
+    </footer>
+
+    <div class="modal-overlay" id="authModal" hidden>
+      <div class="modal" role="dialog" aria-modal="true" aria-labelledby="authTitle">
+        <button class="modal-close" id="authClose" type="button" aria-label="关闭">&times;</button>
+        <h3 id="authTitle" data-i18n="auth.loginTitle">登录</h3>
+        <p class="modal-demo" id="authDemo" data-i18n="auth.demoNote">首次登录即注册，密码至少 6 位；收藏会同步到你的账号。</p>
+        <form id="authForm" novalidate>
+          <label class="modal-field">
+            <span data-i18n="auth.emailLabel">邮箱</span>
+            <input type="email" id="authEmail" autocomplete="username" required>
+          </label>
+          <label class="modal-field">
+            <span data-i18n="auth.passwordLabel">密码</span>
+            <input type="password" id="authPassword" autocomplete="current-password" required minlength="6">
+          </label>
+          <p class="modal-error" id="authError" role="alert" hidden></p>
+          <button type="submit" class="primary-button" id="authSubmit" data-i18n="auth.login">登录</button>
+        </form>
+        <p class="modal-switch">
+          <button type="button" id="authSwitchBtn" data-i18n="auth.toRegister">没有账号？去注册</button>
+        </p>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="supabase-config.js?v=20260705"></script>
+    <script src="data.js?v=20260702-auth"></script>
+    <script src="app.js?v=20260706d"></script>
+  </body>
+</html>
